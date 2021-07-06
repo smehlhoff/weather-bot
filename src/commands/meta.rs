@@ -43,11 +43,11 @@ pub async fn help(ctx: &Context, msg: &Message) -> CommandResult {
             "```
 Bot Commands
 
-Return current weather         !wx current <zip code>
-Return current UV index        !uv current <zip code>
-Return forecasted UV index     !uv forecast <zip code>
-Return bot uptime             !uptime
-This help menu                 !help
+Return current weather          !wx current <zip code>
+Return current UV index         !uv current <zip code>
+Return forecasted UV index      !uv forecast <zip code>
+Return bot uptime               !uptime
+This help menu                  !help
 ```"
             .to_string(),
         )
