@@ -186,12 +186,13 @@ UV Forecast => {}, {} (lat: {}, lon: {})
 
 Forecast for {}
 
-{}```",
+{}
+```",
                 city,
                 state,
                 lat,
                 lon,
-                Local.from_utc_datetime(&data.result[0].uv_time.naive_local()).format("%d-%m-%Y"),
+                Local.from_utc_datetime(&data.result[0].uv_time.naive_local()).format("%B %d, %Y"),
                 forecast
             )
         }
