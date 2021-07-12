@@ -20,6 +20,7 @@ mod lib;
 
 use commands::meta::*;
 use commands::uv::*;
+use commands::wx::*;
 
 use lib::config;
 use lib::error;
@@ -91,8 +92,7 @@ struct General;
 struct UvData;
 
 #[group]
-#[prefixes("wx")]
-#[commands(current)]
+#[commands(wx)]
 struct WxData;
 
 #[tokio::main]
