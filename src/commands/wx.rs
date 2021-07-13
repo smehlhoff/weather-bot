@@ -50,11 +50,13 @@ pub async fn parse_current(zip_code: i32) -> String {
     match fetch_current(zip_code).await {
         Ok(data) => {
             let (city, state) = (data.location.name, data.location.region);
+            let lat = data.location.lat.parse::<f64>().unwrap();
+            let lon = data.location.lon.parse::<f64>().unwrap();
             let pressure = f64::from(data.current.pressure) * 0.0295301;
 
             format!(
                 "```
-Current WX => {}, {} (lat: {}, lon: {})
+Current WX => {}, {} (lat: {:.2}, lon: {:.2})
 
 Temperature: {}\u{b0}
 Wind Speed: {} MPH
@@ -70,8 +72,8 @@ Last updated on {}
 ```",
                 city,
                 state,
-                data.location.lat,
-                data.location.lon,
+                lat,
+                lon,
                 data.current.temperature,
                 data.current.wind_speed,
                 data.current.wind_dir,

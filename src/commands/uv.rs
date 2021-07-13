@@ -55,8 +55,7 @@ struct ForecastPeriod {
 
 async fn fetch_location(zip_code: i32) -> (String, String, f64, f64) {
     let data = wx::fetch_current(zip_code).await.unwrap();
-    let city = data.location.name;
-    let state = data.location.region;
+    let (city, state) = (data.location.name, data.location.region);
     let lat = data.location.lat.parse::<f64>().unwrap();
     let lon = data.location.lon.parse::<f64>().unwrap();
 
@@ -108,7 +107,7 @@ pub async fn parse_current(zip_code: i32) -> String {
 
             format!(
                 "```
-UV Index => {}, {} (lat: {}, lon: {})
+UV Index => {}, {} (lat: {:.2}, lon: {:.2})
 
 Current UV: {:.2} as of {}
 
@@ -182,7 +181,7 @@ pub async fn parse_forecast(zip_code: i32) -> String {
 
             format!(
                 "```
-UV Forecast => {}, {} (lat: {}, lon: {})
+UV Forecast => {}, {} (lat: {:.2}, lon: {:.2})
 
 Forecast for {}
 
