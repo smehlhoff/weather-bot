@@ -2,6 +2,8 @@ use std::fmt;
 
 #[derive(Debug)]
 pub enum Error {
+    Invalid(String),
+    NotFound(String),
     Io(std::io::Error),
     Json(serde_json::Error),
     Reqwest(reqwest::Error),
@@ -11,6 +13,7 @@ pub enum Error {
 impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match *self {
+            Self::Invalid(ref err) | Self::NotFound(ref err) => write!(f, "{}", err),
             Self::Io(ref err) => write!(f, "{}", err),
             Self::Json(ref err) => write!(f, "{}", err),
             Self::Reqwest(ref err) => write!(f, "{}", err),

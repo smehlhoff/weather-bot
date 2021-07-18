@@ -141,7 +141,7 @@ Sunset:     {}
                 sun_set
             )
         }
-        Err(_) => "`There was an error retrieving current data`".to_string(),
+        Err(e) => format!("`There was an error retrieving current data: {}`", e),
     }
 }
 
@@ -195,7 +195,7 @@ Forecast for {}
                 forecast
             )
         }
-        Err(_) => "`There was an error retrieving forecasting data`".to_string(),
+        Err(e) => format!("`There was an error retrieving forecasting data: {}`", e),
     }
 }
 

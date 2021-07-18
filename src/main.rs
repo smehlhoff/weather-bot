@@ -19,6 +19,7 @@ mod commands;
 mod lib;
 
 use commands::meta::*;
+use commands::metar::*;
 use commands::uv::*;
 use commands::wx::*;
 
@@ -84,16 +85,20 @@ struct Admin;
 
 #[group]
 #[commands(ping, uptime, help)]
-struct General;
+struct Meta;
+
+#[group]
+#[commands(metar)]
+struct METAR;
 
 #[group]
 #[prefixes("uv")]
 #[commands(current, forecast)]
-struct UvData;
+struct UV;
 
 #[group]
 #[commands(wx)]
-struct WxData;
+struct WX;
 
 #[tokio::main]
 async fn main() {
@@ -101,9 +106,10 @@ async fn main() {
     let framework = StandardFramework::new()
         .configure(|c| c.prefix("!"))
         .group(&ADMIN_GROUP)
-        .group(&GENERAL_GROUP)
-        .group(&UVDATA_GROUP)
-        .group(&WXDATA_GROUP);
+        .group(&META_GROUP)
+        .group(&METAR_GROUP)
+        .group(&UV_GROUP)
+        .group(&WX_GROUP);
     let mut client = Client::builder(&config.discord)
         .event_handler(Handler)
         .framework(framework)

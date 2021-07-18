@@ -87,7 +87,7 @@ Last updated on {}
                 data.location.localtime
             )
         }
-        Err(_) => "`There was an error retrieving current data`".to_string(),
+        Err(e) => format!("`There was an error retrieving data: {}`", e),
     }
 }
 
