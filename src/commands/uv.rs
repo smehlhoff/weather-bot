@@ -4,8 +4,10 @@ use serenity::model::prelude::*;
 use serenity::prelude::*;
 
 use crate::commands::wx;
+
 use crate::lib::config;
-use crate::lib::error;
+use crate::lib::error::Error;
+use crate::lib::utils;
 
 #[derive(Deserialize, Debug)]
 struct CurrentResult {
@@ -62,7 +64,7 @@ async fn fetch_location(zip_code: i32) -> (String, String, f64, f64) {
     (city, state, lat, lon)
 }
 
-async fn fetch_current(lat: f64, lon: f64) -> Result<CurrentResult, error::Error> {
+async fn fetch_current(lat: f64, lon: f64) -> Result<CurrentResult, Error> {
     let config = config::Config::load_config()?;
     let url = format!("https://api.openuv.io/api/v1/uv?lat={}&lng={}", lat, lon);
     let client = reqwest::Client::new();
@@ -71,7 +73,7 @@ async fn fetch_current(lat: f64, lon: f64) -> Result<CurrentResult, error::Error
 
     Ok(resp)
 }
-async fn fetch_forecast(lat: f64, lon: f64) -> Result<ForecastResult, error::Error> {
+async fn fetch_forecast(lat: f64, lon: f64) -> Result<ForecastResult, Error> {
     let config = config::Config::load_config()?;
     let url = format!("https://api.openuv.io/api/v1/forecast?lat={}&lng={}", lat, lon);
     let client = reqwest::Client::new();
@@ -81,7 +83,7 @@ async fn fetch_forecast(lat: f64, lon: f64) -> Result<ForecastResult, error::Err
     Ok(resp)
 }
 
-pub async fn parse_current(zip_code: i32) -> String {
+async fn parse_current(zip_code: i32) -> String {
     let (city, state, lat, lon) = fetch_location(zip_code).await;
 
     match fetch_current(lat, lon).await {
@@ -141,21 +143,23 @@ Sunset:     {}
                 sun_set
             )
         }
-        Err(e) => format!("`There was an error retrieving current data: {}`", e),
+        Err(e) => format!("`There was an error retrieving data: {}`", e),
     }
 }
 
 #[command]
-pub async fn current(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    match args.single::<i32>() {
-        Ok(zip_code) => {
-            let data = parse_current(zip_code).await;
-            msg.channel_id.say(&ctx.http, data).await?
-        }
-        Err(_) => {
-            msg.channel_id.say(&ctx.http, "`The zip code provided is invalid`".to_string()).await?
-        }
-    };
+pub async fn current(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+    let args: Vec<&str> = args.message().split(' ').collect();
+
+    for arg in args {
+        match utils::check_zip_code(arg) {
+            Ok(zip_code) => {
+                let data = parse_current(zip_code).await;
+                msg.channel_id.say(&ctx.http, data).await?
+            }
+            Err(e) => msg.channel_id.say(&ctx.http, format!("`{}`", e)).await?,
+        };
+    }
 
     Ok(())
 }
@@ -195,21 +199,23 @@ Forecast for {}
                 forecast
             )
         }
-        Err(e) => format!("`There was an error retrieving forecasting data: {}`", e),
+        Err(e) => format!("`There was an error retrieving data: {}`", e),
     }
 }
 
 #[command]
-pub async fn forecast(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    match args.single::<i32>() {
-        Ok(zip_code) => {
-            let data = parse_forecast(zip_code).await;
-            msg.channel_id.say(&ctx.http, data).await?
-        }
-        Err(_) => {
-            msg.channel_id.say(&ctx.http, "`The zip code provided is invalid`".to_string()).await?
-        }
-    };
+pub async fn forecast(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+    let args: Vec<&str> = args.message().split(' ').collect();
+
+    for arg in args {
+        match utils::check_zip_code(arg) {
+            Ok(zip_code) => {
+                let data = parse_forecast(zip_code).await;
+                msg.channel_id.say(&ctx.http, data).await?
+            }
+            Err(e) => msg.channel_id.say(&ctx.http, format!("`{}`", e)).await?,
+        };
+    }
 
     Ok(())
 }

@@ -3,7 +3,8 @@ use serenity::model::prelude::*;
 use serenity::prelude::*;
 
 use crate::lib::config;
-use crate::lib::error;
+use crate::lib::error::Error;
+use crate::lib::utils;
 
 #[derive(Deserialize, Debug)]
 pub struct CurrentResult {
@@ -35,7 +36,7 @@ pub struct Current {
     pub visibility: i32,
 }
 
-pub async fn fetch_current(zip_code: i32) -> Result<CurrentResult, error::Error> {
+pub async fn fetch_current(zip_code: i32) -> Result<CurrentResult, Error> {
     let config = config::Config::load_config()?;
     let url = format!(
         "http://api.weatherstack.com/current?access_key={}&query={}&units=f",
@@ -46,7 +47,7 @@ pub async fn fetch_current(zip_code: i32) -> Result<CurrentResult, error::Error>
     Ok(resp)
 }
 
-pub async fn parse_current(zip_code: i32) -> String {
+async fn parse_current(zip_code: i32) -> String {
     match fetch_current(zip_code).await {
         Ok(data) => {
             let (city, state) = (data.location.name, data.location.region);
@@ -92,16 +93,18 @@ Last updated on {}
 }
 
 #[command]
-pub async fn wx(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    match args.single::<i32>() {
-        Ok(zip_code) => {
-            let data = parse_current(zip_code).await;
-            msg.channel_id.say(&ctx.http, data).await?
-        }
-        Err(_) => {
-            msg.channel_id.say(&ctx.http, "`The zip code provided is invalid`".to_string()).await?
-        }
-    };
+pub async fn wx(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+    let args: Vec<&str> = args.message().split(' ').collect();
+
+    for arg in args {
+        match utils::check_zip_code(arg) {
+            Ok(zip_code) => {
+                let data = parse_current(zip_code).await;
+                msg.channel_id.say(&ctx.http, data).await?
+            }
+            Err(e) => msg.channel_id.say(&ctx.http, format!("`{}`", e)).await?,
+        };
+    }
 
     Ok(())
 }

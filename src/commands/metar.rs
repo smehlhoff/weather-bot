@@ -4,7 +4,7 @@ use serenity::prelude::*;
 
 use crate::lib::error::Error;
 
-pub async fn fetch_metar(station: &str) -> Result<String, Error> {
+async fn fetch_metar(station: &str) -> Result<String, Error> {
     let url =
         format!("https://tgftp.nws.noaa.gov/data/observations/metar/stations/{}.TXT", station);
     let resp = reqwest::get(&url).await?.text().await?;
@@ -34,7 +34,7 @@ async fn parse_metar(station: &str) -> String {
             let data: Vec<&str> = data.split('\n').filter(|x| x.contains(&station)).collect();
             format!("`{}`", data[0].to_string())
         }
-        Err(e) => format!("`{}`", e),
+        Err(e) => format!("`There was an error retrieving data: {}`", e),
     }
 }
 
@@ -48,11 +48,7 @@ pub async fn metar(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
                 let data = parse_metar(&arg).await;
                 msg.channel_id.say(&ctx.http, data).await?
             }
-            Err(e) => {
-                msg.channel_id
-                    .say(&ctx.http, format!("`There was an error retrieving data: {}`", e))
-                    .await?
-            }
+            Err(e) => msg.channel_id.say(&ctx.http, format!("`{}`", e)).await?,
         };
     }
 
