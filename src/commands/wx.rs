@@ -29,7 +29,7 @@ pub struct Current {
     pub wind_degree: i32,
     pub wind_dir: String,
     pub pressure: i32,
-    pub precip: i32,
+    pub precip: f64,
     pub humidity: i32,
     pub cloudcover: i32,
     pub feelslike: i32,
