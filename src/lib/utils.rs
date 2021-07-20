@@ -10,3 +10,15 @@ pub fn check_zip_code(arg: &str) -> Result<i32, Error> {
         Err(Error::Invalid("The zip code provided is not five digits".into()))
     }
 }
+
+pub fn check_station_code(station: &str) -> Result<(), Error> {
+    if station.len() == 4 {
+        if station.starts_with('K') {
+            Ok(())
+        } else {
+            Err(Error::Invalid("U.S. station codes only (e.g., KSFO, KJFK)".into()))
+        }
+    } else {
+        Err(Error::Invalid("The station code provided is invalid".into()))
+    }
+}

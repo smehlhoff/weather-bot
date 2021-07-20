@@ -20,6 +20,7 @@ mod lib;
 
 use commands::meta::*;
 use commands::metar::*;
+use commands::taf::*;
 use commands::uv::*;
 use commands::wx::*;
 
@@ -92,6 +93,10 @@ struct Meta;
 struct METAR;
 
 #[group]
+#[commands(taf)]
+struct TAF;
+
+#[group]
 #[prefixes("uv")]
 #[commands(current, forecast)]
 struct UV;
@@ -108,6 +113,7 @@ async fn main() {
         .group(&ADMIN_GROUP)
         .group(&META_GROUP)
         .group(&METAR_GROUP)
+        .group(&TAF_GROUP)
         .group(&UV_GROUP)
         .group(&WX_GROUP);
     let mut client = Client::builder(&config.discord)
