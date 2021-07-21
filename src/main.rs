@@ -18,11 +18,8 @@ use std::time;
 mod commands;
 mod lib;
 
-use commands::meta::*;
-use commands::metar::*;
-use commands::taf::*;
-use commands::uv::*;
-use commands::wx::*;
+#[allow(clippy::wildcard_imports)]
+use commands::{meta::*, metar::*, taf::*, uv::*, wx::*};
 
 use lib::config;
 use lib::error;

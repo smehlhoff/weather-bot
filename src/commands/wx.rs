@@ -53,6 +53,7 @@ async fn parse_current(zip_code: i32) -> String {
             let (city, state) = (data.location.name, data.location.region);
             let lat = data.location.lat.parse::<f64>().unwrap();
             let lon = data.location.lon.parse::<f64>().unwrap();
+            #[allow(clippy::unreadable_literal)]
             let pressure = f64::from(data.current.pressure) * 0.0295301;
 
             format!(

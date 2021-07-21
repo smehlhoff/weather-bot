@@ -25,7 +25,6 @@ async fn parse_taf(station: &str) -> String {
                 .map(|x| x.replace("AMD", ""))
                 .collect();
             let v2: Vec<&str> = v.iter().map(|x| x.trim()).filter(|x| !x.is_empty()).collect();
-
             format!("```{}```", v2[1..].join("\n\t"))
         }
         Err(e) => format!("`There was an error retrieving data: {}`", e),

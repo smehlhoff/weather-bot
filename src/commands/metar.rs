@@ -21,7 +21,7 @@ async fn parse_metar(station: &str) -> String {
     match fetch_metar(station).await {
         Ok(data) => {
             let data: Vec<&str> = data.split('\n').filter(|x| x.contains(&station)).collect();
-            format!("`{}`", data[0].to_string())
+            format!("`{}`", data[0])
         }
         Err(e) => format!("`There was an error retrieving data: {}`", e),
     }
