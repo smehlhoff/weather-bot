@@ -19,11 +19,14 @@ async fn fetch_taf(station: &str) -> Result<String, Error> {
 async fn parse_taf(station: &str) -> String {
     match fetch_taf(station).await {
         Ok(data) => {
-            let mut data: Vec<&str> =
-                data.split('\n').filter(|x| !x.is_empty()).map(str::trim).collect();
-            // Remove datetime element
-            data.remove(0);
-            format!("```{}```", data.join("\n\t"))
+            let v: Vec<String> = data
+                .split('\n')
+                .map(|x| x.replace("TAF", ""))
+                .map(|x| x.replace("AMD", ""))
+                .collect();
+            let v2: Vec<&str> = v.iter().map(|x| x.trim()).filter(|x| !x.is_empty()).collect();
+
+            format!("```{}```", v2[1..].join("\n\t"))
         }
         Err(e) => format!("`There was an error retrieving data: {}`", e),
     }
