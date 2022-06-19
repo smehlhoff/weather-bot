@@ -123,9 +123,9 @@ Max UV for Today: {:.2} at {}
 
 Sun Times
 
-Sunrise:    {}
-Solar Noon: {}
-Sunset:     {}
+Sunrise:        {}
+Solar Noon:     {}
+Sunset:         {}
 ```",
                 city,
                 state,
@@ -179,8 +179,8 @@ pub async fn parse_forecast(zip_code: i32) -> String {
             let combined = v.iter().zip(v2.iter());
 
             for (value, time) in combined {
-                let entry = format!("{} - {:.2}\n", time, value);
-                forecast.push_str(&entry)
+                let entry = format!("{}: {:.2}\n", time, value);
+                forecast.push_str(&entry);
             }
 
             format!(

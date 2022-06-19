@@ -48,7 +48,7 @@ impl Handler {
                 let data = commands::uv::parse_forecast(zip_code).await;
                 for user in &config.users {
                     if let Err(e) = Self::message_user(ctx, *user, &data).await {
-                        println!("Unable to message user: {}", e)
+                        println!("Unable to message user: {}", e);
                     }
                 }
             }
@@ -105,6 +105,9 @@ struct WX;
 #[tokio::main]
 async fn main() {
     let config = config::Config::load_config().expect("Unable to load config file");
+    let intents = GatewayIntents::GUILD_MESSAGES
+        | GatewayIntents::DIRECT_MESSAGES
+        | GatewayIntents::MESSAGE_CONTENT;
     let framework = StandardFramework::new()
         .configure(|c| c.prefix("!"))
         .group(&ADMIN_GROUP)
@@ -113,7 +116,7 @@ async fn main() {
         .group(&TAF_GROUP)
         .group(&UV_GROUP)
         .group(&WX_GROUP);
-    let mut client = Client::builder(&config.discord)
+    let mut client = Client::builder(&config.discord, intents)
         .event_handler(Handler)
         .framework(framework)
         .await
@@ -125,6 +128,6 @@ async fn main() {
     }
 
     if let Err(e) = client.start().await {
-        panic!("Error connecting client: {}", e)
+        panic!("Error connecting client: {}", e);
     }
 }
