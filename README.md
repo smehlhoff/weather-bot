@@ -1,10 +1,12 @@
 # weather-bot
 
-A personal discord bot that provides METAR, TAF, ultraviolet, and current weather observations. This bot will also send a daily ultraviolet forecast to specified users at 8 am.
+A personal discord bot that provides METAR, TAF, ultraviolet, and current weather observations.
+
+This bot will also send a daily ultraviolet forecast to specified users at 8 am.
 
 ## Install
 
-Rename `config-example.json` to `config.json` and edit fields.
+Rename `config-example.json` to `config.json` and edit fields accordingly.
 
     $ git clone https://github.com/smehlhoff/weather-bot.git
     $ cd weather-bot
