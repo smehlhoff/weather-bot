@@ -42,9 +42,15 @@ pub async fn fetch_current(zip_code: i32) -> Result<CurrentResult, Error> {
         "http://api.weatherstack.com/current?access_key={}&query={}&units=f",
         config.weatherstack, zip_code
     );
-    let resp: CurrentResult = reqwest::get(&url).await?.json().await?;
+    let resp = reqwest::get(&url).await?.json().await;
 
-    Ok(resp)
+    match resp {
+        Ok(data) => {
+            let resp: CurrentResult = data;
+            Ok(resp)
+        }
+        Err(_) => Err(Error::NotFound("The zip code provided does not match a location".into())),
+    }
 }
 
 async fn parse_current(zip_code: i32) -> String {
