@@ -1,3 +1,4 @@
+pub mod atis;
 pub mod meta;
 pub mod metar;
 pub mod taf;

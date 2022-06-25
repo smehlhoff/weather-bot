@@ -19,7 +19,7 @@ mod commands;
 mod lib;
 
 #[allow(clippy::wildcard_imports)]
-use commands::{meta::*, metar::*, taf::*, uv::*, wx::*};
+use commands::{atis::*, meta::*, metar::*, taf::*, uv::*, wx::*};
 
 use lib::config;
 use lib::error;
@@ -82,6 +82,10 @@ impl TypeMapKey for Uptime {
 struct Admin;
 
 #[group]
+#[commands(atis)]
+struct Atis;
+
+#[group]
 #[commands(ping, uptime, help)]
 struct Meta;
 
@@ -111,6 +115,7 @@ async fn main() {
     let framework = StandardFramework::new()
         .configure(|c| c.prefix("!"))
         .group(&ADMIN_GROUP)
+        .group(&ATIS_GROUP)
         .group(&META_GROUP)
         .group(&METAR_GROUP)
         .group(&TAF_GROUP)
