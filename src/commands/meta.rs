@@ -46,6 +46,7 @@ Bot Commands
 Return current weather observation      !wx <zip code>
 Return current METAR report             !metar <station code>
 Return current TAF report               !taf <station code>
+Return ATIS information                 !atis <station code>
 Return current UV index                 !uv current <zip code>
 Return forecasted UV index              !uv forecast <zip code>
 Return bot uptime                       !uptime
