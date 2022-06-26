@@ -1,8 +1,6 @@
 # weather-bot
 
-A personal discord bot that provides METAR, TAF, ultraviolet, and current weather observations.
-
-This bot will also send a daily ultraviolet forecast to specified users at 8 am.
+A discord bot that provides weather information (e.g., METAR, ultraviolet) upon request.
 
 ## Install
 
