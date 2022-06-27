@@ -5,9 +5,7 @@ use serenity::prelude::*;
 
 use crate::commands::wx;
 
-use crate::lib::config;
-use crate::lib::error::Error;
-use crate::lib::utils;
+use crate::lib::{config, error::Error, utils};
 
 #[derive(Deserialize, Debug)]
 struct CurrentResult {
@@ -36,8 +34,8 @@ struct SunInfo {
     sun_times: SunTimes,
 }
 
-#[derive(Deserialize, Debug)]
 #[allow(non_snake_case)]
+#[derive(Deserialize, Debug)]
 struct SunTimes {
     sunrise: chrono::DateTime<Utc>,
     solarNoon: chrono::DateTime<Utc>,
@@ -55,7 +53,7 @@ struct ForecastPeriod {
     uv_time: chrono::DateTime<Utc>,
 }
 
-async fn fetch_location(zip_code: i32) -> Result<(String, String, f64, f64), Error> {
+pub async fn fetch_location(zip_code: i32) -> Result<(String, String, f64, f64), Error> {
     let resp = wx::fetch_current(zip_code).await;
 
     match resp {
@@ -125,17 +123,20 @@ async fn parse_current(zip_code: i32) -> String {
                     "```
 UV Index => {}, {} (lat: {:.2}, lon: {:.2})
 
-Current UV: {:.2} as of {}
+Current UV: {:.2}
+Last updated at {}
 
 Current Safe Exposure Times
+---------------------------
 
-Skin Type 1: {} min.
-Skin Type 2: {} min.
-Skin Type 3: {} min.
+Skin Type 1:    {} min.
+Skin Type 2:    {} min.
+Skin Type 3:    {} min.
 
 Max UV for Today: {:.2} at {}
 
 Sun Times
+---------
 
 Sunrise:        {}
 Solar Noon:     {}
@@ -164,7 +165,8 @@ Sunset:         {}
 }
 
 #[command]
-pub async fn current(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+#[aliases("current")]
+pub async fn uv_current(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let args: Vec<&str> = args.message().split(' ').collect();
 
     for arg in args {
@@ -223,7 +225,8 @@ Forecast for {}
 }
 
 #[command]
-pub async fn forecast(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+#[aliases("forecast")]
+pub async fn uv_forecast(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let args: Vec<&str> = args.message().split(' ').collect();
 
     for arg in args {

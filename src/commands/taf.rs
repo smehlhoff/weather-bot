@@ -2,8 +2,7 @@ use serenity::framework::standard::{macros::command, Args, CommandResult};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 
-use crate::lib::error::Error;
-use crate::lib::utils;
+use crate::lib::{error::Error, utils};
 
 async fn fetch_taf(station: &str) -> Result<String, Error> {
     let url = format!("https://tgftp.nws.noaa.gov/data/forecasts/taf/stations/{}.TXT", station);
