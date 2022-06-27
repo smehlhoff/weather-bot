@@ -6,6 +6,7 @@ use crate::lib::error;
 pub struct Config {
     pub discord: String,
     pub users: Vec<u64>,
+    pub user_agent: String,
     pub openuv: String,
     pub weatherstack: String,
     pub zip_codes: Vec<i32>,

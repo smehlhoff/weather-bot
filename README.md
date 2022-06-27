@@ -1,6 +1,6 @@
 # weather-bot
 
-A discord bot that provides weather information (e.g., METAR, ultraviolet) upon request.
+A discord bot that provides weather information (e.g., METAR, weather forecasts, ultraviolet, etc.) upon request.
 
 ## Install
 
@@ -11,18 +11,21 @@ Rename `config-example.json` to `config.json` and edit fields accordingly.
     $ cargo build --release
     $ nohup ./target/release/weather-bot &
 
+Note: The `user_agent` field must be filled out to retrieve weather information. You can read more [here](https://www.weather.gov/documentation/services-web-api).
+
 ## Usage
 
 This bot supports the following commands:
 
-    Return current weather observation      !wx <zip code>
-    Return current METAR report             !metar <station code>
-    Return current TAF report               !taf <station code>
-    Return ATIS information                 !atis <station code>
-    Return current UV index                 !uv current <zip code>
-    Return forecasted UV index              !uv forecast <zip code>
-    Return bot uptime                       !uptime
-    This help menu                          !help
+    Return current weather          !wx current <zip code>
+    Return weather forecast         !wx forecast <zip code>
+    Return METAR report             !metar <station code>
+    Return TAF report               !taf <station code>
+    Return ATIS information         !atis <station code>
+    Return current UV index         !uv current <zip code>
+    Return UV index forecast        !uv forecast <zip code>
+    Return bot uptime               !uptime
+    This help menu                  !help
 
 ## Contributing
 

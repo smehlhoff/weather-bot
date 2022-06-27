@@ -99,11 +99,12 @@ struct TAF;
 
 #[group]
 #[prefixes("uv")]
-#[commands(current, forecast)]
+#[commands(uv_current, uv_forecast)]
 struct UV;
 
 #[group]
-#[commands(wx)]
+#[prefixes("wx")]
+#[commands(wx_current, wx_forecast)]
 struct WX;
 
 #[tokio::main]
