@@ -19,11 +19,11 @@ pub struct Location {
     pub region: String,
     pub lat: String,
     pub lon: String,
-    pub localtime: String,
 }
 
 #[derive(Deserialize, Debug)]
 pub struct WeatherData {
+    pub observation_time: String,
     pub temperature: i32,
     pub weather_descriptions: Vec<String>,
     pub wind_speed: i32,
@@ -135,7 +135,7 @@ Last updated at {}
                 data.current.cloudcover,
                 data.current.feelslike,
                 data.current.visibility,
-                data.location.localtime
+                data.current.observation_time
             )
         }
         Err(e) => format!("`There was an error retrieving data: {}`", e),
