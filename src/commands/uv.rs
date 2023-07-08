@@ -63,13 +63,13 @@ pub async fn fetch_location(zip_code: i32) -> Result<(String, String, f64, f64),
             let lon = data.location.lon.parse::<f64>().unwrap();
             Ok((city, state, lat, lon))
         }
-        Err(e) => Err(Error::NotFound(format!("{}", e))),
+        Err(e) => Err(Error::NotFound(format!("{e}"))),
     }
 }
 
 async fn fetch_current(lat: f64, lon: f64) -> Result<CurrentResult, Error> {
     let config = config::Config::load_config()?;
-    let url = format!("https://api.openuv.io/api/v1/uv?lat={}&lng={}", lat, lon);
+    let url = format!("https://api.openuv.io/api/v1/uv?lat={lat}&lng={lon}");
     let client = reqwest::Client::new();
     let resp = client.get(&url).header("x-access-token", config.openuv).send().await?.json().await;
 
@@ -83,7 +83,7 @@ async fn fetch_current(lat: f64, lon: f64) -> Result<CurrentResult, Error> {
 }
 async fn fetch_forecast(lat: f64, lon: f64) -> Result<ForecastResult, Error> {
     let config = config::Config::load_config()?;
-    let url = format!("https://api.openuv.io/api/v1/forecast?lat={}&lng={}", lat, lon);
+    let url = format!("https://api.openuv.io/api/v1/forecast?lat={lat}&lng={lon}");
     let client = reqwest::Client::new();
     let resp = client.get(&url).header("x-access-token", config.openuv).send().await?.json().await;
 
@@ -124,6 +124,7 @@ async fn parse_current(zip_code: i32) -> String {
 UV Index => {}, {} (lat: {:.2}, lon: {:.2})
 
 Current UV: {:.2}
+
 Last updated at {}
 
 Current Safe Exposure Times
@@ -158,9 +159,9 @@ Sunset:         {}
                     sun_set
                 )
             }
-            Err(e) => format!("`There was an error retrieving data: {}`", e),
+            Err(e) => format!("`There was an error retrieving data: {e}`"),
         },
-        Err(e) => format!("`There was an error retrieving data: {}`", e),
+        Err(e) => format!("`There was an error retrieving data: {e}`"),
     }
 }
 
@@ -175,7 +176,7 @@ pub async fn uv_current(ctx: &Context, msg: &Message, args: Args) -> CommandResu
                 let data = parse_current(zip_code).await;
                 msg.channel_id.say(&ctx.http, data).await?
             }
-            Err(e) => msg.channel_id.say(&ctx.http, format!("`{}`", e)).await?,
+            Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
         };
     }
 
@@ -196,7 +197,7 @@ pub async fn parse_forecast(zip_code: i32) -> String {
                 let combined = v.iter().zip(v2.iter());
 
                 for (value, time) in combined {
-                    let entry = format!("{}: {:.2}\n", time, value);
+                    let entry = format!("{time}: {value:.2}\n");
                     forecast.push_str(&entry);
                 }
 
@@ -218,9 +219,9 @@ Forecast for {}
                     forecast
                 )
             }
-            Err(e) => format!("`There was an error retrieving data: {}`", e),
+            Err(e) => format!("`There was an error retrieving data: {e}`"),
         },
-        Err(e) => format!("`There was an error retrieving data: {}`", e),
+        Err(e) => format!("`There was an error retrieving data: {e}`"),
     }
 }
 
@@ -235,7 +236,7 @@ pub async fn uv_forecast(ctx: &Context, msg: &Message, args: Args) -> CommandRes
                 let data = parse_forecast(zip_code).await;
                 msg.channel_id.say(&ctx.http, data).await?
             }
-            Err(e) => msg.channel_id.say(&ctx.http, format!("`{}`", e)).await?,
+            Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
         };
     }
 

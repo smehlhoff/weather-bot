@@ -30,7 +30,7 @@ pub async fn uptime(ctx: &Context, msg: &Message) -> CommandResult {
 
     let uptime = formatter.convert_chrono(start_time, current_time);
 
-    msg.channel_id.say(&ctx.http, format!("`{}`", uptime)).await?;
+    msg.channel_id.say(&ctx.http, format!("`{uptime}`")).await?;
 
     Ok(())
 }
@@ -43,15 +43,16 @@ pub async fn help(ctx: &Context, msg: &Message) -> CommandResult {
             "```
 Bot Commands
 
-Return current weather          !wx current <zip code>
-Return weather forecast         !wx forecast <zip code>
-Return METAR report             !metar <station code>
-Return TAF report               !taf <station code>
-Return ATIS information         !atis <station code>
-Return current UV index         !uv current <zip code>
-Return UV index forecast        !uv forecast <zip code>
-Return bot uptime               !uptime
-This help menu                  !help
+Return current weather              !wx current <zip code>
+Return weather forecast             !wx forecast <zip code>
+Return METAR report                 !metar <station code>
+Return TAF report                   !taf <station code>
+Return ATIS information             !atis <station code>
+Return current UV index             !uv current <zip code>
+Return UV index forecast            !uv forecast <zip code>
+Return current weather alerts       !alerts
+Return bot uptime                   !uptime
+This help menu                      !help
 ```"
             .to_string(),
         )

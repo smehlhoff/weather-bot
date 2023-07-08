@@ -4,10 +4,11 @@ use crate::lib::error;
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
+    pub alert_zone: String,
     pub discord: String,
-    pub users: Vec<u64>,
-    pub user_agent: String,
     pub openuv: String,
+    pub user_agent: String,
+    pub users: Vec<u64>,
     pub weatherstack: String,
     pub zip_codes: Vec<i32>,
 }

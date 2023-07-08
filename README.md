@@ -11,21 +11,25 @@ Rename `config-example.json` to `config.json` and edit fields accordingly.
     $ cargo build --release
     $ nohup ./target/release/weather-bot &
 
-Note: The `user_agent` field must be filled out to retrieve weather information. You can read more [here](https://www.weather.gov/documentation/services-web-api).
+Things to consider...
+
+1. The `user_agent` field must be filled out to retrieve NOAA weather information. You can read more [here](https://www.weather.gov/documentation/services-web-api).
+2. For weather alerts, use the Zone Code under Zone List for the `alerts_zone` field for your area. See the zone list [here](https://alerts.weather.gov/).
 
 ## Usage
 
 This bot supports the following commands:
 
-    Return current weather          !wx current <zip code>
-    Return weather forecast         !wx forecast <zip code>
-    Return METAR report             !metar <station code>
-    Return TAF report               !taf <station code>
-    Return ATIS information         !atis <station code>
-    Return current UV index         !uv current <zip code>
-    Return UV index forecast        !uv forecast <zip code>
-    Return bot uptime               !uptime
-    This help menu                  !help
+    Return current weather              !wx current <zip code>
+    Return weather forecast             !wx forecast <zip code>
+    Return METAR report                 !metar <station code>
+    Return TAF report                   !taf <station code>
+    Return ATIS information             !atis <station code>
+    Return current UV index             !uv current <zip code>
+    Return UV index forecast            !uv forecast <zip code>
+    Return current weather alerts       !alerts
+    Return bot uptime                   !uptime
+    This help menu                      !help
 
 ## Contributing
 

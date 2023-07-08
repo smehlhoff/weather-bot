@@ -1,8 +1,9 @@
 {
+    "alert_zone": "",
     "discord": "",
-    "users": [],
-    "user_agent": "",
     "openuv": "",
+    "user_agent": "",
+    "users": [],
     "weatherstack": "",
     "zip_codes": []
 }

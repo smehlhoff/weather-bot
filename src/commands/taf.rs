@@ -5,7 +5,7 @@ use serenity::prelude::*;
 use crate::lib::{error::Error, utils};
 
 async fn fetch_taf(station: &str) -> Result<String, Error> {
-    let url = format!("https://tgftp.nws.noaa.gov/data/forecasts/taf/stations/{}.TXT", station);
+    let url = format!("https://tgftp.nws.noaa.gov/data/forecasts/taf/stations/{station}.TXT");
     let resp = reqwest::get(&url).await?.text().await?;
 
     if resp.contains("The requested URL") {
@@ -24,10 +24,10 @@ async fn parse_taf(station: &str) -> String {
                 .map(|x| x.replace("AMD", ""))
                 .collect();
             let v2: Vec<&str> = v.iter().map(|x| x.trim()).filter(|x| !x.is_empty()).collect();
-            let decoded = format!("https://metar-taf.com/taf/{}", station);
+            let decoded = format!("https://metar-taf.com/taf/{station}");
             format!("```{}\n\nDecoded: {}```", v2[1..].join("\n\t"), decoded)
         }
-        Err(e) => format!("`There was an error retrieving data: {}`", e),
+        Err(e) => format!("`There was an error retrieving data: {e}`"),
     }
 }
 
@@ -41,7 +41,7 @@ pub async fn taf(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
                 let data = parse_taf(&arg).await;
                 msg.channel_id.say(&ctx.http, data).await?
             }
-            Err(e) => msg.channel_id.say(&ctx.http, format!("`{}`", e)).await?,
+            Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
         };
     }
 

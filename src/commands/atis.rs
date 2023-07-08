@@ -6,20 +6,21 @@ use crate::lib::{error::Error, utils};
 
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
-pub struct CurrentResult {
+pub struct AtisResponse {
     airport: String,
     #[serde(rename = "type")]
     _type: String,
+    code: String,
     datis: String,
 }
 
-async fn fetch_atis(station: &str) -> Result<Vec<CurrentResult>, Error> {
-    let url = format!("https://datis.clowd.io/api/{}", station);
+async fn fetch_atis(station: &str) -> Result<Vec<AtisResponse>, Error> {
+    let url = format!("https://datis.clowd.io/api/{station}");
     let resp = reqwest::get(&url).await?.json().await;
 
     match resp {
         Ok(data) => {
-            let resp: Vec<CurrentResult> = data;
+            let resp: Vec<AtisResponse> = data;
             Ok(resp)
         }
         Err(_) => Err(Error::NotFound("The station code provided does not exist".into())),
@@ -47,7 +48,7 @@ async fn parse_atis(station: &str) -> String {
                 )
             }
         }
-        Err(e) => format!("`There was an error retrieving data: {}`", e),
+        Err(e) => format!("`There was an error retrieving data: {e}`"),
     }
 }
 
@@ -61,7 +62,7 @@ pub async fn atis(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
                 let data = parse_atis(&arg).await;
                 msg.channel_id.say(&ctx.http, data).await?
             }
-            Err(e) => msg.channel_id.say(&ctx.http, format!("`{}`", e)).await?,
+            Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
         };
     }
 

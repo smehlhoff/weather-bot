@@ -5,8 +5,7 @@ use serenity::prelude::*;
 use crate::lib::{error::Error, utils};
 
 async fn fetch_metar(station: &str) -> Result<String, Error> {
-    let url =
-        format!("https://tgftp.nws.noaa.gov/data/observations/metar/stations/{}.TXT", station);
+    let url = format!("https://tgftp.nws.noaa.gov/data/observations/metar/stations/{station}.TXT");
     let resp = reqwest::get(&url).await?.text().await?;
 
     if resp.contains("The requested URL") {
@@ -19,10 +18,10 @@ async fn fetch_metar(station: &str) -> Result<String, Error> {
 async fn parse_metar(station: &str) -> String {
     match fetch_metar(station).await {
         Ok(data) => {
-            let data: Vec<&str> = data.split('\n').filter(|x| x.contains(&station)).collect();
+            let data: Vec<&str> = data.split('\n').filter(|x| x.contains(station)).collect();
             format!("`{}`", data[0])
         }
-        Err(e) => format!("`There was an error retrieving data: {}`", e),
+        Err(e) => format!("`There was an error retrieving data: {e}`"),
     }
 }
 
@@ -36,7 +35,7 @@ pub async fn metar(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
                 let data = parse_metar(&arg).await;
                 msg.channel_id.say(&ctx.http, data).await?
             }
-            Err(e) => msg.channel_id.say(&ctx.http, format!("`{}`", e)).await?,
+            Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
         };
     }
 

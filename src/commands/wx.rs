@@ -23,7 +23,6 @@ pub struct Location {
 
 #[derive(Deserialize, Debug)]
 pub struct WeatherData {
-    pub observation_time: String,
     pub temperature: i32,
     pub weather_descriptions: Vec<String>,
     pub wind_speed: i32,
@@ -78,9 +77,7 @@ pub async fn fetch_current(zip_code: i32) -> Result<CurrentWeather, Error> {
 pub async fn fetch_forecast(lat: f64, lon: f64) -> Result<CurrentForecast, Error> {
     let config = config::Config::load_config()?;
     let url = format!(
-        "https://forecast.weather.gov/MapClick.php?lat={}&lon={}&unit=0&lg=english&FcstType=json",
-        lat, lon
-    );
+        "https://forecast.weather.gov/MapClick.php?lat={lat}&lon={lon}&unit=0&lg=english&FcstType=json");
     let client = reqwest::ClientBuilder::new().user_agent(config.user_agent).build()?;
     let resp = client.get(&url).send().await?.json().await;
 
@@ -89,10 +86,7 @@ pub async fn fetch_forecast(lat: f64, lon: f64) -> Result<CurrentForecast, Error
             let resp: CurrentForecast = data;
             Ok(resp)
         }
-        Err(e) => {
-            println!("{}", e);
-            Err(Error::NotFound("The zip code provided does not match a location".into()))
-        }
+        Err(_) => Err(Error::NotFound("The zip code provided does not match a location".into())),
     }
 }
 
@@ -118,8 +112,6 @@ Humidity:           {}%
 Cloud Cover:        {}%
 Feels Like:         {}\u{b0}
 Visbility:          {} MI.
-
-Last updated at {}
 ```",
                 city,
                 state,
@@ -135,10 +127,9 @@ Last updated at {}
                 data.current.cloudcover,
                 data.current.feelslike,
                 data.current.visibility,
-                data.current.observation_time
             )
         }
-        Err(e) => format!("`There was an error retrieving data: {}`", e),
+        Err(e) => format!("`There was an error retrieving data: {e}`"),
     }
 }
 
@@ -153,7 +144,7 @@ pub async fn wx_current(ctx: &Context, msg: &Message, args: Args) -> CommandResu
                 let data = parse_current(zip_code).await;
                 msg.channel_id.say(&ctx.http, data).await?
             }
-            Err(e) => msg.channel_id.say(&ctx.http, format!("`{}`", e)).await?,
+            Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
         };
     }
 
@@ -183,9 +174,9 @@ pub async fn parse_forecast(zip_code: i32) -> String {
                     city, state, lat, lon, forecast, time
                 )
             }
-            Err(e) => format!("`There was an error retrieving data: {}`", e),
+            Err(e) => format!("`There was an error retrieving data: {e}`"),
         },
-        Err(e) => format!("`There was an error retrieving data: {}`", e),
+        Err(e) => format!("`There was an error retrieving data: {e}`"),
     }
 }
 
@@ -200,7 +191,7 @@ pub async fn wx_forecast(ctx: &Context, msg: &Message, args: Args) -> CommandRes
                 let data = parse_forecast(zip_code).await;
                 msg.channel_id.say(&ctx.http, data).await?
             }
-            Err(e) => msg.channel_id.say(&ctx.http, format!("`{}`", e)).await?,
+            Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
         };
     }
 

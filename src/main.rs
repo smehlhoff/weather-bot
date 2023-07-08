@@ -19,7 +19,7 @@ mod commands;
 mod lib;
 
 #[allow(clippy::wildcard_imports)]
-use commands::{atis::*, meta::*, metar::*, taf::*, uv::*, wx::*};
+use commands::{alerts::*, atis::*, meta::*, metar::*, taf::*, uv::*, wx::*};
 
 use lib::config;
 use lib::error;
@@ -39,8 +39,8 @@ impl Handler {
 
     async fn uv_background(ctx: &Context) -> Result<(), error::Error> {
         let config = config::Config::load_config()?;
-        let start_time = NaiveTime::from_hms(8, 0, 0);
-        let end_time = NaiveTime::from_hms(8, 1, 0);
+        let start_time = NaiveTime::from_hms_opt(8, 0, 0).unwrap();
+        let end_time = NaiveTime::from_hms_opt(8, 1, 0).unwrap();
         let current_time = Local::now().time();
 
         if (current_time >= start_time) && (current_time <= end_time) {
@@ -48,7 +48,7 @@ impl Handler {
                 let data = commands::uv::parse_forecast(zip_code).await;
                 for user in &config.users {
                     if let Err(e) = Self::message_user(ctx, *user, &data).await {
-                        println!("Unable to message user: {}", e);
+                        println!("Unable to message user: {e}");
                     }
                 }
             }
@@ -80,6 +80,10 @@ impl TypeMapKey for Uptime {
 
 #[group]
 struct Admin;
+
+#[group]
+#[commands(alerts)]
+struct Alerts;
 
 #[group]
 #[commands(atis)]
@@ -116,6 +120,7 @@ async fn main() {
     let framework = StandardFramework::new()
         .configure(|c| c.prefix("!"))
         .group(&ADMIN_GROUP)
+        .group(&ALERTS_GROUP)
         .group(&ATIS_GROUP)
         .group(&META_GROUP)
         .group(&METAR_GROUP)
