@@ -43,12 +43,15 @@ impl Handler {
         let end_time = NaiveTime::from_hms_opt(8, 1, 0).unwrap();
         let current_time = Local::now().time();
 
-        if (current_time >= start_time) && (current_time <= end_time) {
-            for zip_code in config.zip_codes {
-                let data = commands::uv::parse_forecast(zip_code).await;
-                for user in &config.users {
-                    if let Err(e) = Self::message_user(ctx, *user, &data).await {
-                        println!("Unable to message user: {e}");
+        if (current_time >= start_time) && (current_time < end_time) {
+            if !config.zip_codes.is_empty() {
+                for zip_code in config.zip_codes {
+                    let data = commands::uv::parse_forecast(zip_code).await;
+                    for user in &config.users {
+                        if let Err(e) = Self::message_user(ctx, *user, &data).await {
+                            println!("Unable to message user: {e}");
+                        }
+                        tokio::time::sleep(time::Duration::from_secs(10)).await;
                     }
                 }
             }
