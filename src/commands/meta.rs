@@ -20,7 +20,7 @@ pub async fn uptime(ctx: &Context, msg: &Message) -> CommandResult {
 
         match data.get::<Uptime>() {
             Some(val) => *val,
-            None => return Err(CommandError::from("Unable to load uptime data")),
+            None => return Err(CommandError::from("Error retrieving uptime data")),
         }
     };
     let mut formatter = timeago::Formatter::new();

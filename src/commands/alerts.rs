@@ -45,7 +45,7 @@ async fn parse_alerts() -> String {
     match fetch_alerts().await {
         Ok((data, zone)) => {
             if data.features.is_empty() {
-                ("`No alerts for this zone`").to_string()
+                ("`No active alerts for this zone`").to_string()
             } else {
                 let mut alerts = String::new();
 

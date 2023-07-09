@@ -8,6 +8,7 @@ pub enum Error {
     Json(serde_json::Error),
     Reqwest(reqwest::Error),
     Serenity(serenity::Error),
+    Sqlx(sqlx::Error),
 }
 
 impl fmt::Display for Error {
@@ -18,6 +19,7 @@ impl fmt::Display for Error {
             Self::Json(ref err) => write!(f, "{err}"),
             Self::Reqwest(ref err) => write!(f, "{err}"),
             Self::Serenity(ref err) => write!(f, "{err}"),
+            Self::Sqlx(ref err) => write!(f, "{err}"),
         }
     }
 }
@@ -43,5 +45,11 @@ impl From<reqwest::Error> for Error {
 impl From<serenity::Error> for Error {
     fn from(err: serenity::Error) -> Self {
         Self::Serenity(err)
+    }
+}
+
+impl From<sqlx::Error> for Error {
+    fn from(err: sqlx::Error) -> Self {
+        Self::Sqlx(err)
     }
 }

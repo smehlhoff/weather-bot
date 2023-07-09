@@ -1,5 +1,6 @@
 {
     "alert_zone": "",
+    "debug": false,
     "discord": "",
     "openuv": "",
     "user_agent": "",
