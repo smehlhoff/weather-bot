@@ -27,17 +27,21 @@ struct AlertProperties {
 
 async fn fetch_alerts() -> Result<(AlertResponse, String), Error> {
     let config = config::Config::load_config()?;
-    // https://alerts.weather.gov/
-    let url = format!("https://api.weather.gov/alerts/active/zone/{}", config.alert_zone);
-    let client = reqwest::ClientBuilder::new().user_agent(config.user_agent).build()?;
-    let resp = client.get(&url).send().await?.json().await;
 
-    match resp {
-        Ok(data) => {
-            let resp: AlertResponse = data;
-            Ok((resp, config.alert_zone))
+    if config.alert_zone.is_empty() {
+        Err(Error::NotFound("The config file does not have an alert zone value".into()))
+    } else {
+        let url = format!("https://api.weather.gov/alerts/active/zone/{}", config.alert_zone);
+        let client = reqwest::ClientBuilder::new().user_agent(config.user_agent).build()?;
+        let resp = client.get(&url).send().await?.json().await;
+
+        match resp {
+            Ok(data) => {
+                let resp: AlertResponse = data;
+                Ok((resp, config.alert_zone))
+            }
+            Err(_) => Err(Error::NotFound("The alert zone provided does not exist".into())),
         }
-        Err(_) => Err(Error::NotFound("The alert zone provided does not exist".into())),
     }
 }
 
