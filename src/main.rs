@@ -14,6 +14,7 @@ use serenity::{
 };
 use sqlx::Sqlite;
 
+use std::sync::Arc;
 use std::time;
 
 mod commands;
@@ -29,6 +30,30 @@ use lib::error;
 struct Handler;
 
 impl Handler {
+    async fn alerts_background(ctx: &Context) -> Result<(), error::Error> {
+        let config = config::Config::load_config()?;
+        let start_time = NaiveTime::from_hms_opt(8, 30, 0).unwrap();
+        let end_time = NaiveTime::from_hms_opt(8, 31, 0).unwrap();
+        let current_time = Local::now().time();
+
+        if (current_time >= start_time)
+            && (current_time < end_time)
+            && !config.alert_zones.is_empty()
+        {
+            for alert_zone in config.alert_zones {
+                let data = commands::alerts::parse_alerts(&alert_zone).await;
+                for user in &config.users {
+                    if let Err(e) = Self::message_user(ctx, *user, &data).await {
+                        println!("Error sending message to user: {e}");
+                    }
+                    tokio::time::sleep(time::Duration::from_secs(10)).await;
+                }
+            }
+        }
+
+        Ok(())
+    }
+
     async fn message_user(ctx: &Context, user: u64, data: &str) -> Result<(), error::Error> {
         UserId(user)
             .create_dm_channel(&ctx.http)
@@ -67,9 +92,21 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected.", ready.user.name);
 
+        let ctx = Arc::new(ctx);
+        let ctx1 = Arc::clone(&ctx);
+
         tokio::spawn(async move {
             loop {
-                Self::uv_background(&ctx).await.unwrap();
+                Self::alerts_background(&ctx1).await.unwrap();
+                tokio::time::sleep(time::Duration::from_secs(60)).await;
+            }
+        });
+
+        let ctx2 = Arc::clone(&ctx);
+
+        tokio::spawn(async move {
+            loop {
+                Self::uv_background(&ctx2).await.unwrap();
                 tokio::time::sleep(time::Duration::from_secs(60)).await;
             }
         });
