@@ -14,7 +14,6 @@ use serenity::{
 };
 use sqlx::Sqlite;
 
-use std::sync::Arc;
 use std::time;
 
 mod commands;
@@ -30,7 +29,7 @@ use lib::error;
 struct Handler;
 
 impl Handler {
-    async fn alerts_background(ctx: &Context) -> Result<(), error::Error> {
+    async fn run_background_tasks(ctx: &Context) -> Result<(), error::Error> {
         let config = config::Config::load_config()?;
         let start_time = NaiveTime::from_hms_opt(8, 30, 0).unwrap();
         let end_time = NaiveTime::from_hms_opt(8, 31, 0).unwrap();
@@ -46,7 +45,20 @@ impl Handler {
                     if let Err(e) = Self::message_user(ctx, *user, &data).await {
                         println!("Error sending message to user: {e}");
                     }
-                    tokio::time::sleep(time::Duration::from_secs(10)).await;
+                    tokio::time::sleep(time::Duration::from_secs(3)).await;
+                }
+            }
+        }
+
+        if (current_time >= start_time) && (current_time < end_time) && !config.zip_codes.is_empty()
+        {
+            for zip_code in config.zip_codes {
+                let data = commands::uv::parse_forecast(zip_code).await;
+                for user in &config.users {
+                    if let Err(e) = Self::message_user(ctx, *user, &data).await {
+                        println!("Error sending message to user: {e}");
+                    }
+                    tokio::time::sleep(time::Duration::from_secs(3)).await;
                 }
             }
         }
@@ -63,28 +75,6 @@ impl Handler {
 
         Ok(())
     }
-
-    async fn uv_background(ctx: &Context) -> Result<(), error::Error> {
-        let config = config::Config::load_config()?;
-        let start_time = NaiveTime::from_hms_opt(8, 0, 0).unwrap();
-        let end_time = NaiveTime::from_hms_opt(8, 1, 0).unwrap();
-        let current_time = Local::now().time();
-
-        if (current_time >= start_time) && (current_time < end_time) && !config.zip_codes.is_empty()
-        {
-            for zip_code in config.zip_codes {
-                let data = commands::uv::parse_forecast(zip_code).await;
-                for user in &config.users {
-                    if let Err(e) = Self::message_user(ctx, *user, &data).await {
-                        println!("Error sending message to user: {e}");
-                    }
-                    tokio::time::sleep(time::Duration::from_secs(10)).await;
-                }
-            }
-        }
-
-        Ok(())
-    }
 }
 
 #[async_trait]
@@ -92,21 +82,9 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected.", ready.user.name);
 
-        let ctx = Arc::new(ctx);
-        let ctx1 = Arc::clone(&ctx);
-
         tokio::spawn(async move {
             loop {
-                Self::alerts_background(&ctx1).await.unwrap();
-                tokio::time::sleep(time::Duration::from_secs(60)).await;
-            }
-        });
-
-        let ctx2 = Arc::clone(&ctx);
-
-        tokio::spawn(async move {
-            loop {
-                Self::uv_background(&ctx2).await.unwrap();
+                Self::run_background_tasks(&ctx).await.expect("Error running background tasks");
                 tokio::time::sleep(time::Duration::from_secs(60)).await;
             }
         });
