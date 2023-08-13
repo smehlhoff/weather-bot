@@ -16,15 +16,26 @@ use sqlx::Sqlite;
 
 use std::time;
 
-mod commands;
-mod lib;
+mod commands {
+    pub mod alerts;
+    pub mod atis;
+    pub mod meta;
+    pub mod metar;
+    pub mod taf;
+    pub mod uv;
+    pub mod wx;
+}
+
+mod lib {
+    pub mod config;
+    pub mod db;
+    pub mod error;
+    pub mod utils;
+}
 
 #[allow(clippy::wildcard_imports)]
 use commands::{alerts::*, atis::*, meta::*, metar::*, taf::*, uv::*, wx::*};
-
-use lib::config;
-use lib::db;
-use lib::error;
+use lib::{config, db, error};
 
 struct Handler;
 
