@@ -103,7 +103,7 @@ async fn parse_current(zip_code: i32) -> String {
                 #[allow(unused_assignments)]
                 let mut v = Vec::new();
                 let (uv_time, uv_max_time, sunrise, sun_noon, sun_set) = {
-                    let v2 = vec![
+                    let v2 = [
                         data.result.uv_time,
                         data.result.uv_max_time,
                         data.result.sun_info.sun_times.sunrise,

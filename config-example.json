@@ -1,10 +1,10 @@
 {
-    "alert_zones": [""],
-    "debug": false,
-    "discord": "",
-    "openuv": "",
-    "user_agent": "",
-    "users": [],
-    "weatherstack": "",
-    "zip_codes": []
+  "alert_zones": [""],
+  "debug": false,
+  "discord": "",
+  "openuv": "",
+  "user_agent": "",
+  "users": [],
+  "weatherstack": "",
+  "zip_codes": []
 }

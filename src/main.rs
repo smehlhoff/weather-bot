@@ -1,6 +1,6 @@
 #![warn(clippy::all)]
-#![warn(clippy::pedantic)]
-#![warn(clippy::nursery)]
+// #![warn(clippy::nursery)]
+// #![warn(clippy::pedantic)]
 
 #[macro_use]
 extern crate serde;

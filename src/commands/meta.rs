@@ -50,7 +50,7 @@ Return TAF report                   !taf <station code>
 Return ATIS information             !atis <station code>
 Return current UV index             !uv current <zip code>
 Return UV index forecast            !uv forecast <zip code>
-Return current weather alerts       !alerts
+Return current weather alerts       !alerts <zone code>
 Return bot uptime                   !uptime
 This help menu                      !help
 ```"
