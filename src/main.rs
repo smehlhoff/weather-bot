@@ -14,7 +14,7 @@ use serenity::{
 };
 use sqlx::Sqlite;
 
-use std::{thread::Thread, time};
+use std::time;
 
 mod commands {
     pub mod alerts;
