@@ -93,26 +93,12 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected.", ready.user.name);
 
-        let thread_count = {
-            let data = ctx.data.read().await;
-
-            match data.get::<BackgroundCount>() {
-                Some(val) => *val,
-                None => 0,
+        tokio::spawn(async move {
+            loop {
+                Self::run_background_tasks(&ctx).await.expect("Error running background tasks");
+                tokio::time::sleep(time::Duration::from_secs(60)).await;
             }
-        };
-
-        if thread_count == 0 {
-            tokio::spawn(async move {
-                let mut data = ctx.data.write().await;
-                data.insert::<BackgroundCount>(1);
-
-                loop {
-                    Self::run_background_tasks(&ctx).await.expect("Error running background tasks");
-                    tokio::time::sleep(time::Duration::from_secs(60)).await;
-                }
-            });
-        }
+        });
     }
 
     async fn message(&self, ctx: Context, msg: Message) {
@@ -137,12 +123,6 @@ struct Uptime;
 
 impl TypeMapKey for Uptime {
     type Value = DateTime<Local>;
-}
-
-struct BackgroundCount;
-
-impl TypeMapKey for BackgroundCount {
-    type Value = u32;
 }
 
 #[group]
