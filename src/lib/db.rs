@@ -36,7 +36,7 @@ pub async fn insert_log(pool: &SqlitePool, msg: Message) -> Result<(), Error> {
         username: msg.author.name,
         discriminator: msg.author.discriminator,
         bot: msg.author.bot,
-        content: msg.content,
+        content: msg.content.trim_matches('`').to_string(),
         timestamp: msg.timestamp.to_string(),
     };
 
