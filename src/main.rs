@@ -13,6 +13,7 @@ use serenity::{
     prelude::*,
 };
 use sqlx::Sqlite;
+use std::fs;
 
 use std::time;
 
@@ -97,6 +98,13 @@ impl EventHandler for Handler {
             loop {
                 Self::run_background_tasks(&ctx).await.expect("Error running background tasks");
                 tokio::time::sleep(time::Duration::from_secs(60)).await;
+            }
+        });
+
+        tokio::spawn(async {
+            loop {
+                fs::remove_dir_all("./images").expect("Error deleting ./images directory");
+                tokio::time::sleep(time::Duration::from_secs(86400)).await;
             }
         });
     }
