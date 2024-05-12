@@ -103,9 +103,9 @@ impl EventHandler for Handler {
 
         tokio::spawn(async {
             loop {
-                match fs::remove_dir_all("./images") {
-                    Ok(()) => {},
-                    Err(e) => println!("Error deleting ./images directory: {e}")
+                match fs::remove_dir_all("./attachments") {
+                    Ok(()) => {}
+                    Err(e) => println!("Error deleting ./attachments directory: {e}"),
                 }
 
                 tokio::time::sleep(time::Duration::from_secs(86400)).await;
@@ -123,6 +123,12 @@ impl EventHandler for Handler {
             db::insert_log(&pool, msg).await
         });
     }
+}
+
+struct AdminBot;
+
+impl TypeMapKey for AdminBot {
+    type Value = u64;
 }
 
 struct Database;
@@ -149,7 +155,7 @@ struct Alerts;
 struct Atis;
 
 #[group]
-#[commands(ping, uptime, help)]
+#[commands(ping, uptime, logs, help)]
 struct Meta;
 
 #[group]
@@ -209,6 +215,11 @@ async fn main() {
         .expect("Error creating client");
 
     db::create_log_table(&pool).await.expect("Error creating database table");
+
+    {
+        let mut data = client.data.write().await;
+        data.insert::<AdminBot>(config.admin);
+    }
 
     {
         let mut data = client.data.write().await;

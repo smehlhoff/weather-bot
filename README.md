@@ -31,6 +31,7 @@ This bot supports the following commands:
     Return UV index forecast                !uv forecast <zip code>
     Return current weather alerts           !alerts <zone code>
     Return bot uptime                       !uptime
+    Return bot logs (admin only)            !logs
     This help menu                          !help
 
 For temp forecast, the bot will generate graphs like below (7-day outlook):

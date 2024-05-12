@@ -1,14 +1,16 @@
 use serenity::model::channel::Message;
 use sqlx::sqlite::SqlitePool;
+use sqlx::Row;
 
 use crate::error::Error;
 
-struct LogEntry {
-    user_id: String,
-    username: String,
-    bot: bool,
-    content: String,
-    timestamp: String,
+#[derive(Debug, Serialize)]
+pub struct LogEntry {
+    pub user_id: String,
+    pub username: String,
+    pub bot: bool,
+    pub content: String,
+    pub timestamp: String,
 }
 
 pub async fn create_log_table(pool: &SqlitePool) -> Result<(), Error> {
@@ -49,4 +51,22 @@ pub async fn insert_log(pool: &SqlitePool, msg: Message) -> Result<(), Error> {
     .await?;
 
     Ok(())
+}
+
+pub async fn fetch_log(pool: &SqlitePool) -> Result<Vec<LogEntry>, Error> {
+    let logs = sqlx::query("SELECT * FROM logs").fetch_all(pool).await?;
+    let mut v = Vec::new();
+
+    for log in logs {
+        let user_id: String = log.get("user_id");
+        let username: String = log.get("username");
+        let bot: bool = log.get("bot");
+        let content: String = log.get("content");
+        let timestamp: String = log.get("timestamp");
+        let obj = LogEntry { user_id, username, bot, content, timestamp };
+
+        v.push(obj);
+    }
+
+    Ok(v)
 }

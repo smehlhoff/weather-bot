@@ -4,6 +4,7 @@ use crate::lib::error;
 
 #[derive(Deserialize, Debug)]
 pub struct Config {
+    pub admin: u64,
     pub alert_zones: Vec<String>,
     pub debug: bool,
     pub discord: String,
