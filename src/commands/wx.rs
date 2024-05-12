@@ -230,39 +230,53 @@ fn create_forecast_graph(city: &str, state: &str, label: &str, temps: &[i32]) ->
 
     let mut chart = ChartBuilder::on(&root_area)
         .margin(30)
-        .set_label_area_size(LabelAreaPosition::Left, 40)
-        .set_label_area_size(LabelAreaPosition::Bottom, 40)
+        .set_label_area_size(LabelAreaPosition::Left, 64)
+        .set_label_area_size(LabelAreaPosition::Bottom, 64)
         .caption(format!("Forecasted Temperatures for {city}, {state}"), ("sans-serif", 36))
         .build_cartesian_2d(0..6, (min - 10)..(max + 10))
         .unwrap();
 
-    chart.configure_mesh().draw().unwrap();
     chart
-        .draw_series(LineSeries::new(
-            temp_highs.iter().enumerate().map(|(i, temp)| {
-                let x = i as i32;
-                let y = *temp;
-                (x, y)
-            }),
-            &RED,
-        ))
+        .configure_mesh()
+        .x_desc("Day")
+        .y_desc("Temperature")
+        .label_style(("sans-serif", 24))
+        .draw()
+        .unwrap();
+    chart
+        .draw_series(
+            LineSeries::new(
+                temp_highs.iter().enumerate().map(|(i, temp)| {
+                    let x = i as i32;
+                    let y = *temp;
+                    (x, y)
+                }),
+                &RED,
+            )
+            .point_size(2),
+        )
         .unwrap()
         .label("High")
         .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], RED));
     chart
-        .draw_series(LineSeries::new(
-            temp_lows.iter().enumerate().map(|(i, temp)| {
-                let x = i as i32;
-                let y = *temp;
-                (x, y)
-            }),
-            &BLUE,
-        ))
+        .draw_series(
+            LineSeries::new(
+                temp_lows.iter().enumerate().map(|(i, temp)| {
+                    let x = i as i32;
+                    let y = *temp;
+                    (x, y)
+                }),
+                &BLUE,
+            )
+            .point_size(2),
+        )
         .unwrap()
         .label("Low")
         .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], BLUE));
     chart
         .configure_series_labels()
+        .label_font(("sans-serif", 18))
+        .position(SeriesLabelPosition::MiddleRight)
         .border_style(BLACK)
         .background_style(WHITE.mix(0.8))
         .draw()
