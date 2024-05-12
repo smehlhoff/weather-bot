@@ -204,7 +204,7 @@ pub async fn wx_forecast(ctx: &Context, msg: &Message, args: Args) -> CommandRes
 }
 
 fn create_forecast_graph(city: &str, state: &str, label: &str, temps: &[i32]) -> String {
-    fs::create_dir_all("./images").unwrap();
+    fs::create_dir_all("./images").expect("Error creating ./images directory");
 
     let timestamp: DateTime<Utc> = Utc::now();
     let file_name = format!("./images/{}_forecast_graph.png", timestamp.format("%y_%m_%d_%H%M%S"));
