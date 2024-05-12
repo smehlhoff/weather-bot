@@ -103,7 +103,11 @@ impl EventHandler for Handler {
 
         tokio::spawn(async {
             loop {
-                fs::remove_dir_all("./images").expect("Error deleting ./images directory");
+                match fs::remove_dir_all("./images") {
+                    Ok(()) => {},
+                    Err(e) => println!("Error deleting ./images directory: {e}")
+                }
+
                 tokio::time::sleep(time::Duration::from_secs(86400)).await;
             }
         });
