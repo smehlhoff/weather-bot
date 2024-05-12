@@ -155,7 +155,7 @@ struct UV;
 
 #[group]
 #[prefixes("wx")]
-#[commands(wx_current, wx_forecast)]
+#[commands(wx_current, wx_forecast, wx_graph)]
 struct WX;
 
 #[tokio::main]

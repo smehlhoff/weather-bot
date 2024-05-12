@@ -6,6 +6,7 @@ A discord bot that provides weather information (e.g., METAR, weather forecasts,
 
 Rename `config-example.json` to `config.json` and edit fields accordingly.
 
+    $ sudo apt install pkg-config libfreetype6-dev libfontconfig1-dev       # this is rquired for plotters-rs
     $ git clone https://github.com/smehlhoff/weather-bot.git
     $ cd weather-bot
     $ cargo build --release
@@ -20,16 +21,21 @@ Things to consider...
 
 This bot supports the following commands:
 
-    Return current weather              !wx current <zip code>
-    Return weather forecast             !wx forecast <zip code>
-    Return METAR report                 !metar <station code>
-    Return TAF report                   !taf <station code>
-    Return ATIS information             !atis <station code>
-    Return current UV index             !uv current <zip code>
-    Return UV index forecast            !uv forecast <zip code>
-    Return current weather alerts       !alerts <zone code>
-    Return bot uptime                   !uptime
-    This help menu                      !help
+    Return current weather                  !wx current <zip code>
+    Return weather forecast                 !wx forecast <zip code>
+    Return temp forecast in graph format    !wx graph <zip code>
+    Return METAR report                     !metar <station code>
+    Return TAF report                       !taf <station code>
+    Return ATIS information                 !atis <station code>
+    Return current UV index                 !uv current <zip code>
+    Return UV index forecast                !uv forecast <zip code>
+    Return current weather alerts           !alerts <zone code>
+    Return bot uptime                       !uptime
+    This help menu                          !help
+
+For temp forecast, the bot will generate graphs like below (7-day outlook):
+
+![alt text](forecast_graph.png)
 
 ## Contributing
 

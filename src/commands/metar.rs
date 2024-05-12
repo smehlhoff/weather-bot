@@ -31,7 +31,7 @@ pub async fn metar(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
     for arg in args {
         match utils::check_station_code(&arg) {
-            Ok(_) => {
+            Ok(()) => {
                 let data = parse_metar(&arg).await;
                 msg.channel_id.say(&ctx.http, data).await?
             }

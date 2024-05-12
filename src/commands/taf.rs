@@ -37,7 +37,7 @@ pub async fn taf(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
 
     for arg in args {
         match utils::check_station_code(&arg) {
-            Ok(_) => {
+            Ok(()) => {
                 let data = parse_taf(&arg).await;
                 msg.channel_id.say(&ctx.http, data).await?
             }

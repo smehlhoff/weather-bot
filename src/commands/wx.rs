@@ -1,7 +1,12 @@
 use chrono::prelude::*;
+use plotters::backend::BitMapBackend;
+use plotters::drawing::IntoDrawingArea;
+use plotters::prelude::*;
 use serenity::framework::standard::{macros::command, Args, CommandResult};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
+use std::fs;
+use tokio::fs::File;
 
 use crate::commands::uv;
 
@@ -191,6 +196,114 @@ pub async fn wx_forecast(ctx: &Context, msg: &Message, args: Args) -> CommandRes
                 let data = parse_forecast(zip_code).await;
                 msg.channel_id.say(&ctx.http, data).await?
             }
+            Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
+        };
+    }
+
+    Ok(())
+}
+
+fn create_forecast_graph(city: &str, state: &str, label: &str, temps: &[i32]) -> String {
+    fs::create_dir_all("./images").unwrap();
+
+    let timestamp: DateTime<Utc> = Utc::now();
+    let file_name = format!("./images/{}_forecast_graph.png", timestamp.format("%y_%m_%d_%H%M%S"));
+
+    let min = temps.iter().min().unwrap();
+    let max = temps.iter().max().unwrap();
+
+    let (temp_highs, temp_lows) = if label.contains("Low") {
+        let highs: Vec<i32> = temps.iter().skip(1).step_by(2).map(|x| x.to_owned()).collect();
+        let lows: Vec<i32> = temps.iter().step_by(2).map(|x| x.to_owned()).collect();
+
+        (highs, lows)
+    } else {
+        let highs: Vec<i32> = temps.iter().step_by(2).map(|x| x.to_owned()).collect();
+        let lows: Vec<i32> = temps.iter().skip(1).step_by(2).map(|x| x.to_owned()).collect();
+
+        (highs, lows)
+    };
+
+    let root_area = BitMapBackend::new(&file_name, (1024, 768)).into_drawing_area();
+
+    root_area.fill(&WHITE).unwrap();
+
+    let mut chart = ChartBuilder::on(&root_area)
+        .margin(30)
+        .set_label_area_size(LabelAreaPosition::Left, 40)
+        .set_label_area_size(LabelAreaPosition::Bottom, 40)
+        .caption(format!("Forecasted Temperatures for {city}, {state}"), ("sans-serif", 36))
+        .build_cartesian_2d(0..6, (min - 10)..(max + 10))
+        .unwrap();
+
+    chart.configure_mesh().draw().unwrap();
+    chart
+        .draw_series(LineSeries::new(
+            temp_highs.iter().enumerate().map(|(i, temp)| {
+                let x = i as i32;
+                let y = *temp;
+                (x, y)
+            }),
+            &RED,
+        ))
+        .unwrap()
+        .label("High")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], RED));
+    chart
+        .draw_series(LineSeries::new(
+            temp_lows.iter().enumerate().map(|(i, temp)| {
+                let x = i as i32;
+                let y = *temp;
+                (x, y)
+            }),
+            &BLUE,
+        ))
+        .unwrap()
+        .label("Low")
+        .legend(|(x, y)| PathElement::new(vec![(x, y), (x + 20, y)], BLUE));
+    chart
+        .configure_series_labels()
+        .border_style(BLACK)
+        .background_style(WHITE.mix(0.8))
+        .draw()
+        .unwrap();
+
+    file_name.to_string()
+}
+
+#[command]
+#[aliases("graph")]
+pub async fn wx_graph(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
+    let args: Vec<&str> = args.message().split(' ').collect();
+
+    for arg in args {
+        match utils::check_zip_code(arg) {
+            Ok(zip_code) => match uv::fetch_location(zip_code).await {
+                Ok((city, state, lat, lon)) => match fetch_forecast(lat, lon).await {
+                    Ok(data) => {
+                        let temps: Vec<i32> = data
+                            .data
+                            .temperature
+                            .iter()
+                            .map(|x| x.parse::<i32>().unwrap())
+                            .collect();
+                        let file_name =
+                            create_forecast_graph(&city, &state, &data.time.tempLabel[0], &temps);
+                        let file = match File::open(file_name).await {
+                            Ok(f) => f,
+                            Err(e) => {
+                                msg.channel_id.say(&ctx.http, format!("`{e}`")).await?;
+                                return Ok(());
+                            }
+                        };
+                        let file = vec![(&file, "forecast_graph.png")];
+
+                        msg.channel_id.send_files(&ctx.http, file, |m| m.content("")).await?
+                    }
+                    Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
+                },
+                Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
+            },
             Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
         };
     }
