@@ -6,7 +6,7 @@ A discord bot that provides weather information (e.g., METAR, weather forecasts,
 
 Rename `config-example.json` to `config.json` and edit fields accordingly.
 
-    $ sudo apt install pkg-config libfreetype6-dev libfontconfig1-dev       # this is rquired for plotters-rs
+    $ sudo apt install pkg-config libfreetype6-dev libfontconfig1-dev   # rquired for plotters-rs
     $ git clone https://github.com/smehlhoff/weather-bot.git
     $ cd weather-bot
     $ cargo build --release
