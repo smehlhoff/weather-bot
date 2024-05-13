@@ -207,7 +207,7 @@ fn create_forecast_graph(
     state: &str,
     label: &str,
     temps: &[i32],
-) -> Result<std::string::String, Error> {
+) -> Result<String, Error> {
     let timestamp: DateTime<Utc> = Utc::now();
     let file_name =
         format!("./attachments/{}_forecast_graph.png", timestamp.format("%y_%m_%d_%H%M%S"));
