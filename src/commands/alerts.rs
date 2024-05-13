@@ -57,7 +57,7 @@ pub async fn parse_alerts(alert_zone: &str) -> String {
                 format!("```{}\n\n{}\nRead more here: https://alerts.weather.gov/cap/wwaatmget.php?x={}&y=1```", data.title, alerts, alert_zone)
             }
         }
-        Err(e) => format!("`There was an error retrieving alerts: {e}`"),
+        Err(e) => format!("`There was an error retrieving data: {e}`"),
     }
 }
 

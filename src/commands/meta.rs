@@ -3,11 +3,10 @@ use csv::WriterBuilder;
 use serenity::framework::standard::{macros::command, CommandError, CommandResult};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
-use std::fs;
 use tokio::fs::File;
 
 use crate::lib::db;
-use crate::{AdminBot, Database, Uptime};
+use crate::{BotAdmin, Database, Uptime};
 
 #[command]
 pub async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
@@ -44,23 +43,24 @@ pub async fn logs(ctx: &Context, msg: &Message) -> CommandResult {
     let admin = {
         let data = ctx.data.read().await;
 
-        match data.get::<AdminBot>() {
+        match data.get::<BotAdmin>() {
             Some(val) => *val,
-            None => return Err(CommandError::from("Error retrieving admin bot data")),
+            None => return Err(CommandError::from("Error retrieving bot admin data")),
         }
     };
 
     if msg.author.id.0 == admin {
         let pool = {
             let data = ctx.data.read().await;
-            data.get::<Database>().expect("Error retrieving database pool").clone()
+
+            match data.get::<Database>().cloned() {
+                Some(val) => val,
+                None => return Err(CommandError::from("Error retrieving database pool")),
+            }
         };
 
         match db::fetch_log(&pool).await {
             Ok(logs) => {
-                fs::create_dir_all("./attachments")
-                    .expect("Error creating ./attachments directory");
-
                 let timestamp: DateTime<Utc> = Utc::now();
                 let file_name =
                     format!("./attachments/{}_logs.csv", timestamp.format("%y_%m_%d_%H%M%S"));
@@ -75,7 +75,9 @@ pub async fn logs(ctx: &Context, msg: &Message) -> CommandResult {
                 let file = match File::open(file_name).await {
                     Ok(f) => f,
                     Err(e) => {
-                        msg.channel_id.say(&ctx.http, format!("`{e}`")).await?;
+                        msg.channel_id
+                            .say(&ctx.http, format!("`Error reading csv file: {e}`"))
+                            .await?;
                         return Ok(());
                     }
                 };
@@ -83,7 +85,11 @@ pub async fn logs(ctx: &Context, msg: &Message) -> CommandResult {
 
                 msg.channel_id.send_files(&ctx.http, file, |m| m.content("")).await?
             }
-            Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
+            Err(e) => {
+                msg.channel_id
+                    .say(&ctx.http, format!("`There was an error retrieving data: {e}`"))
+                    .await?
+            }
         };
 
         Ok(())

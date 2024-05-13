@@ -103,10 +103,14 @@ impl EventHandler for Handler {
 
         tokio::spawn(async {
             loop {
-                match fs::remove_dir_all("./attachments") {
-                    Ok(()) => {}
-                    Err(e) => println!("Error deleting ./attachments directory: {e}"),
+                if fs::metadata("./attachments").is_ok() {
+                    match fs::remove_dir_all("./attachments") {
+                        Ok(()) => {}
+                        Err(e) => println!("Error deleting directory: {e}"),
+                    }
                 }
+                fs::create_dir_all("./attachments")
+                    .expect("Error creating ./attachments directory");
 
                 tokio::time::sleep(time::Duration::from_secs(86400)).await;
             }
@@ -114,20 +118,22 @@ impl EventHandler for Handler {
     }
 
     async fn message(&self, ctx: Context, msg: Message) {
-        tokio::spawn(async move {
-            let pool = {
-                let data = ctx.data.read().await;
-                data.get::<Database>().expect("Error retrieving database pool").clone()
-            };
+        if ctx.cache.current_user_id() != msg.author.id.0 {
+            tokio::spawn(async move {
+                let pool = {
+                    let data = ctx.data.read().await;
+                    data.get::<Database>().expect("Error retrieving database pool").clone()
+                };
 
-            db::insert_log(&pool, msg).await
-        });
+                db::insert_log(&pool, msg).await
+            });
+        }
     }
 }
 
-struct AdminBot;
+struct BotAdmin;
 
-impl TypeMapKey for AdminBot {
+impl TypeMapKey for BotAdmin {
     type Value = u64;
 }
 
@@ -218,7 +224,7 @@ async fn main() {
 
     {
         let mut data = client.data.write().await;
-        data.insert::<AdminBot>(config.admin);
+        data.insert::<BotAdmin>(config.admin);
     }
 
     {

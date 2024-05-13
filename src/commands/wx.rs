@@ -5,7 +5,6 @@ use plotters::prelude::*;
 use serenity::framework::standard::{macros::command, Args, CommandResult};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
-use std::fs;
 use tokio::fs::File;
 
 use crate::commands::uv;
@@ -203,9 +202,12 @@ pub async fn wx_forecast(ctx: &Context, msg: &Message, args: Args) -> CommandRes
     Ok(())
 }
 
-fn create_forecast_graph(city: &str, state: &str, label: &str, temps: &[i32]) -> String {
-    fs::create_dir_all("./attachments").expect("Error creating ./attachments directory");
-
+fn create_forecast_graph(
+    city: &str,
+    state: &str,
+    label: &str,
+    temps: &[i32],
+) -> Result<std::string::String, Error> {
     let timestamp: DateTime<Utc> = Utc::now();
     let file_name =
         format!("./attachments/{}_forecast_graph.png", timestamp.format("%y_%m_%d_%H%M%S"));
@@ -283,7 +285,7 @@ fn create_forecast_graph(city: &str, state: &str, label: &str, temps: &[i32]) ->
         .draw()
         .unwrap();
 
-    file_name.to_string()
+    Ok(file_name.to_string())
 }
 
 #[command]
@@ -302,12 +304,26 @@ pub async fn wx_graph(ctx: &Context, msg: &Message, args: Args) -> CommandResult
                             .iter()
                             .map(|x| x.parse::<i32>().unwrap())
                             .collect();
-                        let file_name =
-                            create_forecast_graph(&city, &state, &data.time.tempLabel[0], &temps);
+                        let file_name = match create_forecast_graph(
+                            &city,
+                            &state,
+                            &data.time.tempLabel[0],
+                            &temps,
+                        ) {
+                            Ok(val) => val,
+                            Err(e) => {
+                                msg.channel_id
+                                    .say(&ctx.http, format!("`Error creating chart: {e}`"))
+                                    .await?;
+                                return Ok(());
+                            }
+                        };
                         let file = match File::open(file_name).await {
                             Ok(f) => f,
                             Err(e) => {
-                                msg.channel_id.say(&ctx.http, format!("`{e}`")).await?;
+                                msg.channel_id
+                                    .say(&ctx.http, format!("`Error opening image file: {e}`"))
+                                    .await?;
                                 return Ok(());
                             }
                         };
