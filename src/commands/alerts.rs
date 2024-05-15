@@ -27,6 +27,7 @@ struct AlertProperties {
 
 async fn fetch_alerts(alert_zone: &str) -> Result<AlertResponse, Error> {
     let config = config::Config::load_config()?;
+    let alert_zone = alert_zone.to_uppercase();
     let url = format!("https://api.weather.gov/alerts/active/zone/{alert_zone}");
     let client = reqwest::ClientBuilder::new().user_agent(config.user_agent).build()?;
     let resp = client.get(&url).send().await?.json().await;
