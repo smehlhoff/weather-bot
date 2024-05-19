@@ -30,9 +30,20 @@ This bot supports the following commands:
     Return current UV index                 !uv current <zip code>
     Return UV index forecast                !uv forecast <zip code>
     Return current weather alerts           !alerts <zone code>
+    Set default location                    !location set <zip code>
+    Return default location                 !location list
+    Delete default location                 !location delete
     Return bot uptime                       !uptime
     Return bot logs (admin only)            !logs
     This help menu                          !help
+
+Note: If you set a default location, the following commands do not need a zip code provided:
+
+    !wx current
+    !wx forecast
+    !wx graph
+    !uv current
+    !uv forecast
 
 For temp forecast, the bot will generate graphs like below (7-day outlook):
 

@@ -117,6 +117,9 @@ Return ATIS information                 !atis <station code>
 Return current UV index                 !uv current <zip code>
 Return UV index forecast                !uv forecast <zip code>
 Return current weather alerts           !alerts <zone code>
+Set default location                    !location set <zip code>
+Return default location                 !location list
+Delete default location                 !location delete
 Return bot uptime                       !uptime
 Return bot logs (admin only)            !logs
 This help menu                          !help

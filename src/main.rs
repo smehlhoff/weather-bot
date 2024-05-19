@@ -20,6 +20,7 @@ use std::time;
 mod commands {
     pub mod alerts;
     pub mod atis;
+    pub mod location;
     pub mod meta;
     pub mod metar;
     pub mod taf;
@@ -35,7 +36,7 @@ mod lib {
 }
 
 #[allow(clippy::wildcard_imports)]
-use commands::{alerts::*, atis::*, meta::*, metar::*, taf::*, uv::*, wx::*};
+use commands::{alerts::*, atis::*, location::*, meta::*, metar::*, taf::*, uv::*, wx::*};
 use lib::{config, db, error};
 
 struct Handler;
@@ -161,6 +162,11 @@ struct Alerts;
 struct Atis;
 
 #[group]
+#[prefixes("location")]
+#[commands(location_set, location_list, location_delete)]
+struct Location;
+
+#[group]
 #[commands(ping, uptime, logs, help)]
 struct Meta;
 
@@ -209,6 +215,7 @@ async fn main() {
         .group(&ADMIN_GROUP)
         .group(&ALERTS_GROUP)
         .group(&ATIS_GROUP)
+        .group(&LOCATION_GROUP)
         .group(&META_GROUP)
         .group(&METAR_GROUP)
         .group(&TAF_GROUP)

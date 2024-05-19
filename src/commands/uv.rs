@@ -168,7 +168,11 @@ Sunset:         {}
 #[command]
 #[aliases("current")]
 pub async fn uv_current(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    let args: Vec<&str> = args.message().split(' ').collect();
+    let args = match utils::check_location(ctx, msg, &args).await {
+        Ok(val) => val,
+        Err(_) => String::new(),
+    };
+    let args: Vec<&str> = args.split(' ').collect();
 
     for arg in args {
         match utils::check_zip_code(arg) {
@@ -228,7 +232,11 @@ Forecast for {}
 #[command]
 #[aliases("forecast")]
 pub async fn uv_forecast(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    let args: Vec<&str> = args.message().split(' ').collect();
+    let args = match utils::check_location(ctx, msg, &args).await {
+        Ok(val) => val,
+        Err(_) => String::new(),
+    };
+    let args: Vec<&str> = args.split(' ').collect();
 
     for arg in args {
         match utils::check_zip_code(arg) {

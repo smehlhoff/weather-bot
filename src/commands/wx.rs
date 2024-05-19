@@ -140,7 +140,11 @@ Visbility:          {} MI.
 #[command]
 #[aliases("current")]
 pub async fn wx_current(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    let args: Vec<&str> = args.message().split(' ').collect();
+    let args = match utils::check_location(ctx, msg, &args).await {
+        Ok(val) => val,
+        Err(_) => String::new(),
+    };
+    let args: Vec<&str> = args.split(' ').collect();
 
     for arg in args {
         match utils::check_zip_code(arg) {
@@ -187,7 +191,11 @@ pub async fn parse_forecast(zip_code: i32) -> String {
 #[command]
 #[aliases("forecast")]
 pub async fn wx_forecast(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    let args: Vec<&str> = args.message().split(' ').collect();
+    let args = match utils::check_location(ctx, msg, &args).await {
+        Ok(val) => val,
+        Err(_) => String::new(),
+    };
+    let args: Vec<&str> = args.split(' ').collect();
 
     for arg in args {
         match utils::check_zip_code(arg) {
@@ -291,7 +299,11 @@ fn create_forecast_graph(
 #[command]
 #[aliases("graph")]
 pub async fn wx_graph(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    let args: Vec<&str> = args.message().split(' ').collect();
+    let args = match utils::check_location(ctx, msg, &args).await {
+        Ok(val) => val,
+        Err(_) => String::new(),
+    };
+    let args: Vec<&str> = args.split(' ').collect();
 
     for arg in args {
         match utils::check_zip_code(arg) {
