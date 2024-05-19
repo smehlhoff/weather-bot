@@ -115,7 +115,7 @@ Precipitation:      {} IN.
 Humidity:           {}%
 Cloud Cover:        {}%
 Feels Like:         {}\u{b0}
-Visbility:          {} MI.
+Visibility:         {} MI.
 ```",
                 city,
                 state,
