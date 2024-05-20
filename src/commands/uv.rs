@@ -116,8 +116,6 @@ UV Index => {}, {} (lat: {:.2}, lon: {:.2})
 
 Current UV: {:.2}
 
-Last updated at {}
-
 Current Safe Exposure Times
 ---------------------------
 
@@ -133,13 +131,14 @@ Sun Times
 Sunrise:        {}
 Solar Noon:     {}
 Sunset:         {}
+
+Last updated at {}
 ```",
                         city,
                         state,
                         lat,
                         lon,
                         data.result.uv,
-                        uv_time,
                         data.result.safe_exposure_time.st1.unwrap_or(0),
                         data.result.safe_exposure_time.st2.unwrap_or(0),
                         data.result.safe_exposure_time.st3.unwrap_or(0),
@@ -147,7 +146,8 @@ Sunset:         {}
                         uv_max_time,
                         sunrise,
                         sun_noon,
-                        sun_set
+                        sun_set,
+                        uv_time
                     )
                 }
                 Err(e) => format!("`There was an error retrieving data: {e}`"),
