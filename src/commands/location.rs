@@ -6,7 +6,7 @@ use crate::lib::{db, utils};
 use crate::Database;
 
 #[command]
-#[aliases("set")]
+#[aliases("set", "add")]
 pub async fn location_set(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
     let zip_code = args.message();
     let pool = {
@@ -38,7 +38,7 @@ pub async fn location_set(ctx: &Context, msg: &Message, args: Args) -> CommandRe
 }
 
 #[command]
-#[aliases("list")]
+#[aliases("list", "show")]
 pub async fn location_list(ctx: &Context, msg: &Message) -> CommandResult {
     let pool = {
         let data = ctx.data.read().await;
@@ -58,7 +58,7 @@ pub async fn location_list(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-#[aliases("delete")]
+#[aliases("delete", "del")]
 pub async fn location_delete(ctx: &Context, msg: &Message) -> CommandResult {
     let pool = {
         let data = ctx.data.read().await;
