@@ -6,6 +6,19 @@ use crate::error::Error;
 use crate::lib::db;
 use crate::Database;
 
+#[derive(Deserialize, Debug)]
+pub struct GeocodeResponse {
+    pub results: Vec<GeocodeData>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct GeocodeData {
+    pub name: String,
+    pub admin1: String,
+    pub latitude: f64,
+    pub longitude: f64,
+}
+
 pub fn check_zip_code(arg: &str) -> Result<i32, Error> {
     if arg.len() == 5 {
         match arg.parse::<i32>() {
@@ -39,6 +52,30 @@ pub async fn check_location(ctx: &Context, msg: &Message, args: &Args) -> Result
 
         Ok(zip_code)
     } else {
-        Ok(args.message().to_string())
+        Ok(String::from(args.message()))
     }
+}
+
+pub async fn fetch_location(zip_code: i32) -> Result<GeocodeResponse, Error> {
+    let url = format!("https://geocoding-api.open-meteo.com/v1/search?name={zip_code}&count=1&language=en&format=json");
+    let resp = reqwest::get(&url).await?.json().await;
+
+    match resp {
+        Ok(data) => {
+            let resp: GeocodeResponse = data;
+            Ok(resp)
+        }
+        Err(_) => Err(Error::NotFound("The zip code provided does not match a location".into())),
+    }
+}
+
+pub fn cardinal_direction(val: &str) -> String {
+    let val: f64 = val.parse::<f64>().unwrap();
+    let directions = [
+        "N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW",
+        "NW", "NNW", "N",
+    ];
+    let index = (val / 22.5).round() as usize;
+
+    String::from(directions[index])
 }

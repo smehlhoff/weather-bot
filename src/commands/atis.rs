@@ -5,7 +5,7 @@ use serenity::prelude::*;
 use crate::lib::{error::Error, utils};
 
 #[allow(dead_code)]
-#[derive(Deserialize, Debug)]
+#[derive(Debug, Deserialize)]
 pub struct AtisResponse {
     airport: String,
     #[serde(rename = "type")]

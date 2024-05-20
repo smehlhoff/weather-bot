@@ -7,78 +7,46 @@ use serenity::model::prelude::*;
 use serenity::prelude::*;
 use tokio::fs::File;
 
-use crate::commands::uv;
-
-use crate::lib::{config, error::Error, utils};
-
-#[derive(Deserialize, Debug)]
-pub struct CurrentWeather {
-    pub location: Location,
-    pub current: WeatherData,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct Location {
-    pub name: String,
-    pub region: String,
-    pub lat: String,
-    pub lon: String,
-}
-
-#[derive(Deserialize, Debug)]
-pub struct WeatherData {
-    pub temperature: i32,
-    pub weather_descriptions: Vec<String>,
-    pub wind_speed: i32,
-    pub wind_degree: i32,
-    pub wind_dir: String,
-    pub pressure: i32,
-    pub precip: f64,
-    pub humidity: i32,
-    pub cloudcover: i32,
-    pub feelslike: i32,
-    pub visibility: i32,
-}
+use crate::lib::{config, error::Error, utils, utils::GeocodeResponse};
 
 #[allow(non_snake_case)]
-#[derive(Deserialize, Debug)]
-pub struct CurrentForecast {
+#[derive(Debug, Deserialize)]
+pub struct WeatherResponse {
     creationDate: chrono::DateTime<Utc>,
     time: ForecastTime,
     data: ForecastData,
+    currentobservation: CurrentData,
 }
 
 #[allow(non_snake_case)]
-#[derive(Deserialize, Debug)]
+#[derive(Debug, Deserialize)]
 pub struct ForecastTime {
     startPeriodName: Vec<String>,
     tempLabel: Vec<String>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Debug, Deserialize)]
 pub struct ForecastData {
     temperature: Vec<String>,
     text: Vec<String>,
 }
 
-pub async fn fetch_current(zip_code: i32) -> Result<CurrentWeather, Error> {
-    let config = config::Config::load_config()?;
-    let url = format!(
-        "http://api.weatherstack.com/current?access_key={}&query={}&units=f",
-        config.weatherstack, zip_code
-    );
-    let resp = reqwest::get(&url).await?.json().await;
-
-    match resp {
-        Ok(data) => {
-            let resp: CurrentWeather = data;
-            Ok(resp)
-        }
-        Err(_) => Err(Error::NotFound("The zip code provided does not match a location".into())),
-    }
+#[allow(non_snake_case)]
+#[derive(Debug, Deserialize)]
+pub struct CurrentData {
+    pub Temp: String,
+    pub Dewp: String,
+    pub Relh: String,
+    pub Winds: String,
+    pub Windd: String,
+    pub Gust: String,
+    pub Weather: String,
+    pub Visibility: String,
+    pub SLP: String,
+    pub WindChill: String,
 }
 
-pub async fn fetch_forecast(lat: f64, lon: f64) -> Result<CurrentForecast, Error> {
+pub async fn fetch_wx(lat: f64, lon: f64) -> Result<WeatherResponse, Error> {
     let config = config::Config::load_config()?;
     let url = format!(
         "https://forecast.weather.gov/MapClick.php?lat={lat}&lon={lon}&unit=0&lg=english&FcstType=json");
@@ -87,50 +55,114 @@ pub async fn fetch_forecast(lat: f64, lon: f64) -> Result<CurrentForecast, Error
 
     match resp {
         Ok(data) => {
-            let resp: CurrentForecast = data;
+            let resp: WeatherResponse = data;
             Ok(resp)
         }
         Err(_) => Err(Error::NotFound("The zip code provided does not match a location".into())),
     }
 }
 
-async fn parse_current(zip_code: i32) -> String {
-    match fetch_current(zip_code).await {
-        Ok(data) => {
-            let (city, state) = (data.location.name, data.location.region);
-            let lat = data.location.lat.parse::<f64>().unwrap();
-            let lon = data.location.lon.parse::<f64>().unwrap();
-            #[allow(clippy::unreadable_literal)]
-            let pressure = f64::from(data.current.pressure) * 0.0295301;
+async fn parse_current(data: GeocodeResponse) -> String {
+    let (city, state, lat, lon) = (
+        &data.results[0].name,
+        &data.results[0].admin1,
+        data.results[0].latitude,
+        data.results[0].longitude,
+    );
 
+    match fetch_wx(lat, lon).await {
+        Ok(data) => {
             format!(
                 "```
 Current Weather => {}, {} (lat: {:.2}, lon: {:.2})
 
-Temperature:        {}\u{b0}
-Wind Speed:         {} MPH
-Wind Direction:     {} ({}\u{b0})
-Pressure:           {:.2} Hg
-Precipitation:      {} IN.
-Humidity:           {}%
-Cloud Cover:        {}%
-Feels Like:         {}\u{b0}
-Visibility:         {} MI.
+Temperature:        {}
+Dew:                {}
+Humidity:           {}
+Wind Speed:         {}
+Wind Direction:     {} {}
+Wind Gust:          {}
+Pressure:           {}
+Weather:            {}
+Visibility:         {}
+Wind Chill          {}
 ```",
                 city,
                 state,
                 lat,
                 lon,
-                data.current.temperature,
-                data.current.wind_speed,
-                data.current.wind_dir,
-                data.current.wind_degree,
-                pressure,
-                data.current.precip,
-                data.current.humidity,
-                data.current.cloudcover,
-                data.current.feelslike,
-                data.current.visibility,
+                if data.currentobservation.Temp == "NA" || data.currentobservation.Temp.is_empty() {
+                    String::from("-")
+                } else {
+                    let temp = data.currentobservation.Temp;
+                    format!("{temp}\u{b0}")
+                },
+                if data.currentobservation.Dewp == "NA" || data.currentobservation.Dewp.is_empty() {
+                    String::from("-")
+                } else {
+                    let dew = data.currentobservation.Dewp;
+                    format!("{dew}\u{b0}")
+                },
+                if data.currentobservation.Relh == "NA" || data.currentobservation.Relh.is_empty() {
+                    String::from("-")
+                } else {
+                    let humidity = data.currentobservation.Relh;
+                    format!("{humidity}%")
+                },
+                if data.currentobservation.Winds == "NA" || data.currentobservation.Winds.is_empty()
+                {
+                    String::from("-")
+                } else {
+                    let wind = data.currentobservation.Winds;
+                    format!("{wind} MPH")
+                },
+                if data.currentobservation.Windd == "NA" || data.currentobservation.Windd.is_empty()
+                {
+                    String::from("-")
+                } else {
+                    utils::cardinal_direction(&data.currentobservation.Windd)
+                },
+                if data.currentobservation.Windd == "NA" || data.currentobservation.Windd.is_empty()
+                {
+                    String::from("")
+                } else {
+                    let wind_direction = data.currentobservation.Windd;
+                    format!("({wind_direction}\u{b0})")
+                },
+                if data.currentobservation.Gust == "NA" || data.currentobservation.Gust.is_empty() {
+                    String::from("-")
+                } else {
+                    data.currentobservation.Gust
+                },
+                // TODO: Trim trailing zeroes and decimal point
+                if data.currentobservation.SLP == "NA" || data.currentobservation.SLP.is_empty() {
+                    String::from("-")
+                } else {
+                    let alt = data.currentobservation.SLP;
+                    format!("{alt} inHg")
+                },
+                if data.currentobservation.Weather == "NA"
+                    || data.currentobservation.Weather.is_empty()
+                {
+                    String::from("-")
+                } else {
+                    data.currentobservation.Weather
+                },
+                if data.currentobservation.Visibility == "NA"
+                    || data.currentobservation.Visibility.is_empty()
+                {
+                    String::from("-")
+                } else {
+                    let visibility = data.currentobservation.Visibility;
+                    format!("{visibility} SM")
+                },
+                if data.currentobservation.WindChill == "NA"
+                    || data.currentobservation.WindChill.is_empty()
+                {
+                    String::from("-")
+                } else {
+                    data.currentobservation.WindChill
+                }
             )
         }
         Err(e) => format!("`There was an error retrieving data: {e}`"),
@@ -148,10 +180,13 @@ pub async fn wx_current(ctx: &Context, msg: &Message, args: Args) -> CommandResu
 
     for arg in args {
         match utils::check_zip_code(arg) {
-            Ok(zip_code) => {
-                let data = parse_current(zip_code).await;
-                msg.channel_id.say(&ctx.http, data).await?
-            }
+            Ok(zip_code) => match utils::fetch_location(zip_code).await {
+                Ok(data) => {
+                    let data = parse_current(data).await;
+                    msg.channel_id.say(&ctx.http, data).await?
+                }
+                Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
+            },
             Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
         };
     }
@@ -160,30 +195,39 @@ pub async fn wx_current(ctx: &Context, msg: &Message, args: Args) -> CommandResu
 }
 
 pub async fn parse_forecast(zip_code: i32) -> String {
-    match uv::fetch_location(zip_code).await {
-        Ok((city, state, lat, lon)) => match fetch_forecast(lat, lon).await {
-            Ok(data) => {
-                let mut forecast = String::new();
-                let time =
-                    Local.from_utc_datetime(&data.creationDate.naive_local()).format("%I:%M %p");
+    match utils::fetch_location(zip_code).await {
+        Ok(data) => {
+            let (city, state, lat, lon) = (
+                &data.results[0].name,
+                &data.results[0].admin1,
+                data.results[0].latitude,
+                data.results[0].longitude,
+            );
+            match fetch_wx(lat, lon).await {
+                Ok(data) => {
+                    let mut forecast = String::new();
+                    let time = Local
+                        .from_utc_datetime(&data.creationDate.naive_local())
+                        .format("%I:%M %p");
 
-                for i in 0..5 {
-                    forecast.push_str(&format!(
-                        "\n\n{} ({}: {})\n-----------------------\n\n{}",
-                        data.time.startPeriodName[i],
-                        data.time.tempLabel[i].to_lowercase(),
-                        data.data.temperature[i],
-                        data.data.text[i]
-                    ));
-                }
+                    for i in 0..5 {
+                        forecast.push_str(&format!(
+                            "\n\n{} ({}: {})\n-----------------------\n\n{}",
+                            data.time.startPeriodName[i],
+                            data.time.tempLabel[i].to_lowercase(),
+                            data.data.temperature[i],
+                            data.data.text[i]
+                        ));
+                    }
 
-                format!(
+                    format!(
                     "```Weather Forecast => {}, {} (lat: {:.2}, lon: {:.2}) {}\n\nLast updated at {}```",
                     city, state, lat, lon, forecast, time
                 )
+                }
+                Err(e) => format!("`There was an error retrieving data: {e}`"),
             }
-            Err(e) => format!("`There was an error retrieving data: {e}`"),
-        },
+        }
         Err(e) => format!("`There was an error retrieving data: {e}`"),
     }
 }
@@ -307,44 +351,52 @@ pub async fn wx_graph(ctx: &Context, msg: &Message, args: Args) -> CommandResult
 
     for arg in args {
         match utils::check_zip_code(arg) {
-            Ok(zip_code) => match uv::fetch_location(zip_code).await {
-                Ok((city, state, lat, lon)) => match fetch_forecast(lat, lon).await {
-                    Ok(data) => {
-                        let temps: Vec<i32> = data
-                            .data
-                            .temperature
-                            .iter()
-                            .map(|x| x.parse::<i32>().unwrap())
-                            .collect();
-                        let file_name = match create_forecast_graph(
-                            &city,
-                            &state,
-                            &data.time.tempLabel[0],
-                            &temps,
-                        ) {
-                            Ok(val) => val,
-                            Err(e) => {
-                                msg.channel_id
-                                    .say(&ctx.http, format!("`Error creating chart: {e}`"))
-                                    .await?;
-                                return Ok(());
-                            }
-                        };
-                        let file = match File::open(file_name).await {
-                            Ok(f) => f,
-                            Err(e) => {
-                                msg.channel_id
-                                    .say(&ctx.http, format!("`Error opening image file: {e}`"))
-                                    .await?;
-                                return Ok(());
-                            }
-                        };
-                        let file = vec![(&file, "forecast_graph.png")];
+            Ok(zip_code) => match utils::fetch_location(zip_code).await {
+                Ok(data) => {
+                    let (city, state, lat, lon) = (
+                        &data.results[0].name,
+                        &data.results[0].admin1,
+                        data.results[0].latitude,
+                        data.results[0].longitude,
+                    );
+                    match fetch_wx(lat, lon).await {
+                        Ok(data) => {
+                            let temps: Vec<i32> = data
+                                .data
+                                .temperature
+                                .iter()
+                                .map(|x| x.parse::<i32>().unwrap())
+                                .collect();
+                            let file_name = match create_forecast_graph(
+                                city,
+                                state,
+                                &data.time.tempLabel[0],
+                                &temps,
+                            ) {
+                                Ok(val) => val,
+                                Err(e) => {
+                                    msg.channel_id
+                                        .say(&ctx.http, format!("`Error creating chart: {e}`"))
+                                        .await?;
+                                    return Ok(());
+                                }
+                            };
+                            let file = match File::open(file_name).await {
+                                Ok(f) => f,
+                                Err(e) => {
+                                    msg.channel_id
+                                        .say(&ctx.http, format!("`Error opening image file: {e}`"))
+                                        .await?;
+                                    return Ok(());
+                                }
+                            };
+                            let file = vec![(&file, "forecast_graph.png")];
 
-                        msg.channel_id.send_files(&ctx.http, file, |m| m.content("")).await?
+                            msg.channel_id.send_files(&ctx.http, file, |m| m.content("")).await?
+                        }
+                        Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
                     }
-                    Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
-                },
+                }
                 Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
             },
             Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,

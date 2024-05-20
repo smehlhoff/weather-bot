@@ -11,7 +11,6 @@ pub struct Config {
     pub openuv: String,
     pub user_agent: String,
     pub users: Vec<u64>,
-    pub weatherstack: String,
     pub zip_codes: Vec<i32>,
 }
 
