@@ -13,9 +13,15 @@ use crate::lib::{config, error::Error, utils, utils::GeocodeResponse};
 #[derive(Debug, Deserialize)]
 pub struct WeatherResponse {
     creationDate: chrono::DateTime<Utc>,
+    pub location: LocationData,
     time: ForecastTime,
     data: ForecastData,
     currentobservation: CurrentData,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct LocationData {
+    pub zone: String,
 }
 
 #[allow(non_snake_case)]
@@ -124,7 +130,7 @@ Wind Chill          {}
                 },
                 if data.currentobservation.Windd == "NA" || data.currentobservation.Windd.is_empty()
                 {
-                    String::from("")
+                    String::new()
                 } else {
                     let wind_direction = data.currentobservation.Windd;
                     format!("({wind_direction}\u{b0})")

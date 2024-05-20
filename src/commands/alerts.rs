@@ -2,14 +2,14 @@ use serenity::framework::standard::{macros::command, Args, CommandResult};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 
-use crate::lib::{config, error::Error};
+use crate::commands::wx;
+use crate::lib::{config, error::Error, utils, utils::GeocodeResponse};
 
 #[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct AlertResponse {
     features: Vec<AlertFeature>,
     title: String,
-    updated: String,
 }
 
 #[allow(dead_code)]
@@ -41,21 +41,29 @@ async fn fetch_alerts(alert_zone: &str) -> Result<AlertResponse, Error> {
     }
 }
 
-pub async fn parse_alerts(alert_zone: &str) -> String {
-    match fetch_alerts(alert_zone).await {
-        Ok(data) => {
-            if data.features.is_empty() {
-                ("`No active alerts for this zone`").to_string()
-            } else {
-                let mut alerts = String::new();
+pub async fn parse_alerts(data: GeocodeResponse) -> String {
+    let (lat, lon) = (data.results[0].latitude, data.results[0].longitude);
 
-                for alert in data.features.iter().rev() {
-                    alerts.push_str(&format!(
-                        "- {} ({})\n",
-                        alert.properties.headline, alert.properties.severity,
-                    ));
+    match wx::fetch_wx(lat, lon).await {
+        Ok(data) => {
+            let alert_zone = data.location.zone;
+            match fetch_alerts(&alert_zone).await {
+                Ok(data) => {
+                    if data.features.is_empty() {
+                        ("`No active alerts for this zone`").to_string()
+                    } else {
+                        let mut alerts = String::new();
+
+                        for alert in data.features.iter().rev() {
+                            alerts.push_str(&format!(
+                                "- {} ({})\n",
+                                alert.properties.headline, alert.properties.severity,
+                            ));
+                        }
+                        format!("```{}\n\n{}\nRead more here: https://alerts.weather.gov/cap/wwaatmget.php?x={}&y=1```", data.title, alerts, alert_zone)
+                    }
                 }
-                format!("```{}\n\n{}\nRead more here: https://alerts.weather.gov/cap/wwaatmget.php?x={}&y=1```", data.title, alerts, alert_zone)
+                Err(e) => format!("`There was an error retrieving data: {e}`"),
             }
         }
         Err(e) => format!("`There was an error retrieving data: {e}`"),
@@ -64,11 +72,23 @@ pub async fn parse_alerts(alert_zone: &str) -> String {
 
 #[command]
 pub async fn alerts(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
-    let args: Vec<&str> = args.message().split(' ').collect();
+    let args = match utils::check_location(ctx, msg, &args).await {
+        Ok(val) => val,
+        Err(_) => String::new(),
+    };
+    let args: Vec<&str> = args.split(' ').collect();
 
     for arg in args {
-        let data = parse_alerts(arg).await;
-        msg.channel_id.say(&ctx.http, data).await?;
+        match utils::check_zip_code(arg) {
+            Ok(zip_code) => match utils::fetch_location(zip_code).await {
+                Ok(data) => {
+                    let data = parse_alerts(data).await;
+                    msg.channel_id.say(&ctx.http, data).await?
+                }
+                Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
+            },
+            Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
+        };
     }
 
     Ok(())
