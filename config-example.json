@@ -1,10 +1,23 @@
 {
-  "admin": "",
-  "alert_zones": [""],
+  "admin": 356892147506238495,
+  "alert_users": [
+    725184093756210348,
+    239829386928628363
+  ],
+  "alert_zip_codes": [
+    48317,
+    72954
+  ],
   "debug": false,
-  "discord": "",
-  "openuv": "",
-  "user_agent": "",
-  "users": [],
-  "zip_codes": []
+  "discord": "API key",
+  "openuv": "API key",
+  "user_agent": "My Weather Bot <test@example.com>",
+  "uv_users": [
+    725184093756210348,
+    239829386928628363
+  ],
+  "uv_zip_codes": [
+    58247,
+    19362
+  ]
 }
