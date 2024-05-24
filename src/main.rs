@@ -55,7 +55,7 @@ impl Handler {
             for zip_code in config.alert_zip_codes {
                 let alert_zone =
                     utils::fetch_location(zip_code).await.expect("Error retrieving alert zone");
-                let data = commands::alerts::parse_alerts(alert_zone).await;
+                let data = commands::alerts::parse_alerts(zip_code, alert_zone).await;
                 for user in &config.alert_users {
                     if let Err(e) = Self::message_user(ctx, *user, &data).await {
                         println!("Error sending message to user: {e}");

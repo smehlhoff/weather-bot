@@ -41,7 +41,7 @@ async fn fetch_alerts(alert_zone: &str) -> Result<AlertResponse, Error> {
     }
 }
 
-pub async fn parse_alerts(data: GeocodeResponse) -> String {
+pub async fn parse_alerts(zip_code: i32, data: GeocodeResponse) -> String {
     let (lat, lon) = (data.results[0].latitude, data.results[0].longitude);
 
     match wx::fetch_wx(lat, lon).await {
@@ -50,7 +50,7 @@ pub async fn parse_alerts(data: GeocodeResponse) -> String {
             match fetch_alerts(&alert_zone).await {
                 Ok(data) => {
                     if data.features.is_empty() {
-                        ("`No active alerts for this zone`").to_string()
+                        format!("`No active alerts for {zip_code}`")
                     } else {
                         let mut alerts = String::new();
 
@@ -82,7 +82,7 @@ pub async fn alerts(ctx: &Context, msg: &Message, args: Args) -> CommandResult {
         match utils::check_zip_code(arg) {
             Ok(zip_code) => match utils::fetch_location(zip_code).await {
                 Ok(data) => {
-                    let data = parse_alerts(data).await;
+                    let data = parse_alerts(zip_code, data).await;
                     msg.channel_id.say(&ctx.http, data).await?
                 }
                 Err(e) => msg.channel_id.say(&ctx.http, format!("`{e}`")).await?,
