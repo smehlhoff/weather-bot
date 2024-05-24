@@ -6,12 +6,12 @@ use crate::error::Error;
 use crate::lib::db;
 use crate::Database;
 
-#[derive(Deserialize, Debug)]
+#[derive(Debug, Deserialize)]
 pub struct GeocodeResponse {
     pub results: Vec<GeocodeData>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Debug, Deserialize)]
 pub struct GeocodeData {
     pub name: String,
     pub admin1: String,

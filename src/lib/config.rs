@@ -2,7 +2,7 @@ use std::fs;
 
 use crate::lib::error;
 
-#[derive(Deserialize, Debug)]
+#[derive(Debug, Deserialize)]
 pub struct Config {
     pub admin: u64,
     pub alert_users: Vec<u64>,
