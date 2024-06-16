@@ -1,10 +1,10 @@
 use chrono::prelude::*;
-use plotters::backend::BitMapBackend;
-use plotters::drawing::IntoDrawingArea;
-use plotters::prelude::*;
-use serenity::framework::standard::{macros::command, Args, CommandResult};
-use serenity::model::prelude::*;
-use serenity::prelude::*;
+use plotters::{backend::BitMapBackend, drawing::IntoDrawingArea, prelude::*};
+use serenity::{
+    framework::standard::{macros::command, Args, CommandResult},
+    model::prelude::*,
+    prelude::*,
+};
 use tokio::fs::File;
 
 use crate::lib::{config, error::Error, utils, utils::GeocodeResponse};

@@ -1,6 +1,5 @@
 use serenity::model::channel::Message;
-use sqlx::sqlite::SqlitePool;
-use sqlx::Row;
+use sqlx::{sqlite::SqlitePool, Row};
 
 use crate::error::Error;
 

@@ -2974,6 +2974,7 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "csv",
+ "once_cell",
  "plotters",
  "reqwest 0.12.4",
  "serde",

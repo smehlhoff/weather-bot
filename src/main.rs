@@ -6,6 +6,7 @@
 extern crate serde;
 
 use chrono::{DateTime, Local, NaiveTime};
+use once_cell::sync::OnceCell;
 use serenity::{
     async_trait,
     framework::standard::{macros::group, StandardFramework},
@@ -38,6 +39,8 @@ mod lib {
 #[allow(clippy::wildcard_imports)]
 use commands::{alerts::*, atis::*, location::*, meta::*, metar::*, taf::*, uv::*, wx::*};
 use lib::{config, db, error, utils};
+
+static CELL: OnceCell<()> = OnceCell::new();
 
 struct Handler;
 
@@ -99,11 +102,13 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected.", ready.user.name);
 
-        tokio::spawn(async move {
-            loop {
-                Self::run_background_tasks(&ctx).await.expect("Error running background tasks");
-                tokio::time::sleep(time::Duration::from_secs(60)).await;
-            }
+        CELL.get_or_init(|| {
+            tokio::spawn(async move {
+                loop {
+                    Self::run_background_tasks(&ctx).await.expect("Error running background tasks");
+                    tokio::time::sleep(time::Duration::from_secs(60)).await;
+                }
+            });
         });
 
         tokio::spawn(async {

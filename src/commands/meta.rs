@@ -1,12 +1,13 @@
 use chrono::prelude::*;
 use csv::WriterBuilder;
-use serenity::framework::standard::{macros::command, CommandError, CommandResult};
-use serenity::model::prelude::*;
-use serenity::prelude::*;
+use serenity::{
+    framework::standard::{macros::command, CommandError, CommandResult},
+    model::prelude::*,
+    prelude::*,
+};
 use tokio::fs::File;
 
-use crate::lib::db;
-use crate::{BotAdmin, Database, Uptime};
+use crate::{lib::db, BotAdmin, Database, Uptime};
 
 #[command]
 pub async fn ping(ctx: &Context, msg: &Message) -> CommandResult {

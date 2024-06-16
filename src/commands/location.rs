@@ -1,9 +1,13 @@
-use serenity::framework::standard::{macros::command, Args, CommandResult};
-use serenity::model::prelude::*;
-use serenity::prelude::*;
+use serenity::{
+    framework::standard::{macros::command, Args, CommandResult},
+    model::prelude::*,
+    prelude::*,
+};
 
-use crate::lib::{db, utils};
-use crate::Database;
+use crate::{
+    lib::{db, utils},
+    Database,
+};
 
 #[command]
 #[aliases("set", "add")]

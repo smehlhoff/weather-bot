@@ -1,10 +1,6 @@
-use serenity::framework::standard::Args;
-use serenity::model::prelude::*;
-use serenity::prelude::*;
+use serenity::{framework::standard::Args, model::prelude::*, prelude::*};
 
-use crate::error::Error;
-use crate::lib::db;
-use crate::Database;
+use crate::{error::Error, lib::db, Database};
 
 #[derive(Debug, Deserialize)]
 pub struct GeocodeResponse {
