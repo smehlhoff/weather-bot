@@ -90,9 +90,7 @@ impl Handler {
         let config = config::Config::load_config()?;
 
         if !config.healthcheck.is_empty() {
-            let client = reqwest::Client::new();
-
-            client.post(&config.healthcheck).send().await?;
+            reqwest::get(&config.healthcheck).await?;
         }
 
         Ok(())
