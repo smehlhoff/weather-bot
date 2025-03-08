@@ -9,6 +9,7 @@ pub struct Config {
     pub alert_zip_codes: Vec<i32>,
     pub debug: bool,
     pub discord: String,
+    pub healthcheck: String,
     pub openuv: String,
     pub user_agent: String,
     pub uv_users: Vec<u64>,

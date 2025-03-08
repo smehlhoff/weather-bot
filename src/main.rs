@@ -86,6 +86,18 @@ impl Handler {
         Ok(())
     }
 
+    async fn healthcheck() -> Result<(), error::Error> {
+        let config = config::Config::load_config()?;
+
+        if !config.healthcheck.is_empty() {
+            let client = reqwest::Client::new();
+
+            client.post(&config.healthcheck).send().await?;
+        }
+
+        Ok(())
+    }
+
     async fn message_user(ctx: &Context, user: u64, data: &str) -> Result<(), error::Error> {
         UserId(user)
             .create_dm_channel(&ctx.http)
@@ -106,6 +118,13 @@ impl EventHandler for Handler {
             tokio::spawn(async move {
                 loop {
                     Self::run_background_tasks(&ctx).await.expect("Error running background tasks");
+                    tokio::time::sleep(time::Duration::from_secs(60)).await;
+                }
+            });
+
+            tokio::spawn(async {
+                loop {
+                    Self::healthcheck().await.expect("Error running healthcheck background");
                     tokio::time::sleep(time::Duration::from_secs(60)).await;
                 }
             });

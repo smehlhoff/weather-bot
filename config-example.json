@@ -10,6 +10,7 @@
   ],
   "debug": false,
   "discord": "API key",
+  "healthcheck": "Push URL",
   "openuv": "API key",
   "user_agent": "My Weather Bot <test@example.com>",
   "uv_users": [
