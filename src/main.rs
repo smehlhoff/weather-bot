@@ -90,7 +90,14 @@ impl Handler {
         let config = config::Config::load_config()?;
 
         if !config.healthcheck.is_empty() {
-            reqwest::get(&config.healthcheck).await?;
+            let resp = reqwest::get(&config.healthcheck).await;
+
+            match resp {
+                Ok(_) => {}
+                Err(e) => {
+                    println!("Error sending healthcheck: {e}")
+                }
+            }
         }
 
         Ok(())
