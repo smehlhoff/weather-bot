@@ -17,6 +17,16 @@ pub async fn ping(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
+pub async fn utc(ctx: &Context, msg: &Message) -> CommandResult {
+    let now: DateTime<Utc> = Utc::now();
+    let now = format!("`{}`", now.format("%Y-%m-%d %H:%M:%S"));
+
+    msg.channel_id.say(&ctx.http, now).await?;
+
+    Ok(())
+}
+
+#[command]
 pub async fn uptime(ctx: &Context, msg: &Message) -> CommandResult {
     let current_time = Local::now();
     let start_time = {
@@ -121,6 +131,7 @@ Return current weather alerts           !alerts <zip code>
 Set default location                    !location set <zip code>
 Return default location                 !location list
 Delete default location                 !location delete
+Return time in UTC                      !utc
 Return bot uptime                       !uptime
 Return bot logs (admin only)            !logs
 This help menu                          !help

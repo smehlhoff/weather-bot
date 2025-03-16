@@ -200,7 +200,7 @@ struct Atis;
 struct Location;
 
 #[group]
-#[commands(ping, uptime, logs, help)]
+#[commands(ping, utc, uptime, logs, help)]
 struct Meta;
 
 #[group]
