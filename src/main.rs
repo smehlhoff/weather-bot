@@ -14,7 +14,7 @@ use serenity::{
     prelude::*,
 };
 use sqlx::Sqlite;
-use std::fs;
+use std::{fs, time::Duration};
 
 use std::time;
 
@@ -121,16 +121,22 @@ impl EventHandler for Handler {
 
         CELL.get_or_init(|| {
             tokio::spawn(async move {
+                let mut interval = tokio::time::interval(Duration::from_secs(60));
+
                 loop {
                     Self::run_background_tasks(&ctx).await.expect("Error running background tasks");
-                    tokio::time::sleep(time::Duration::from_secs(60)).await;
+
+                    interval.tick().await;
                 }
             });
 
             tokio::spawn(async {
+                let mut interval = tokio::time::interval(Duration::from_secs(60));
+
                 loop {
                     Self::healthcheck().await.expect("Error running healthcheck background");
-                    tokio::time::sleep(time::Duration::from_secs(60)).await;
+
+                    interval.tick().await;
                 }
             });
         });
