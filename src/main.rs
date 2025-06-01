@@ -131,7 +131,7 @@ impl EventHandler for Handler {
             });
 
             tokio::spawn(async {
-                let mut interval = tokio::time::interval(Duration::from_secs(55));
+                let mut interval = tokio::time::interval(Duration::from_secs(30));
 
                 loop {
                     Self::healthcheck().await.expect("Error running healthcheck background");
